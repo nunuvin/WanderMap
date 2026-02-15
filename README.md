@@ -1,6 +1,7 @@
 # WanderMap
 
 WanderMap is a single-page map explorer and geolocation guessing game built with plain HTML/CSS/JavaScript.
+It was made with Gemini Pro.
 
 ## Features
 
@@ -24,6 +25,10 @@ python3 -m http.server 8000
 ```
 
 Then visit `http://localhost:8000`.
+
+## Live demo
+
+GitHub Pages: https://nunuvin.github.io/WanderMap/
 
 ## Project structure
 
