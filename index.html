@@ -553,6 +553,13 @@
         let activeToasters = {};
         let activeViewTab = 'map'; 
         let hasViewedStreet = false;
+        const TAB_ACTIVE_CLASSES = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white text-xs md:text-sm font-bold transition-all shadow-md';
+        const TAB_DISABLED_CLASSES = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-500 opacity-50 cursor-not-allowed hover:bg-slate-700/50 text-xs md:text-sm font-bold transition-all';
+        const TAB_INACTIVE_CLASSES = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-700 text-xs md:text-sm font-bold transition-all';
+        const TOASTER_VISIBLE_CLASSES = ['opacity-100', 'translate-x-0', 'scale-100'];
+        const TOASTER_HIDDEN_CLASSES = ['opacity-0', 'translate-x-8', 'pointer-events-none', 'scale-95'];
+        const SNAP_VISIBLE_CLASSES = ['opacity-100', 'translate-y-0', 'scale-100'];
+        const SNAP_HIDDEN_CLASSES = ['opacity-0', '-translate-y-4', 'pointer-events-none', 'scale-95'];
         
         // GAME STATE
         let gameMapInstance = null;
@@ -702,44 +709,49 @@
         const tabs = ['map', 'view', 'game', 'stats'];
         const coordTextEl = document.getElementById('coord-text');
 
-        function switchTab(target) {
-            if (target === 'view' && !hasViewedStreet) return; 
+        /**
+         * Switches the active top-level tab and updates related UI state.
+         * @param {'map'|'view'|'game'|'stats'} targetTab - Tab to activate.
+         * @returns {void}
+         */
+        function switchTab(targetTab) {
+            if (targetTab === 'view' && !hasViewedStreet) return; 
 
-            activeViewTab = target;
+            activeViewTab = targetTab;
             
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                const pane = document.getElementById(`pane-${t}`);
+            tabs.forEach(tabName => {
+                const btn = document.getElementById(`tab-${tabName}`);
+                const pane = document.getElementById(`pane-${tabName}`);
                 if (!btn || !pane) return;
 
-                if (t === target) {
-                    btn.className = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white text-xs md:text-sm font-bold transition-all shadow-md';
+                if (tabName === targetTab) {
+                    btn.className = TAB_ACTIVE_CLASSES;
                     btn.removeAttribute('title');
                     pane.classList.remove('opacity-0', 'pointer-events-none');
                 } else {
-                    if (t === 'view' && !hasViewedStreet) {
-                        btn.className = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-500 opacity-50 cursor-not-allowed hover:bg-slate-700/50 text-xs md:text-sm font-bold transition-all';
+                    if (tabName === 'view' && !hasViewedStreet) {
+                        btn.className = TAB_DISABLED_CLASSES;
                         btn.title = "Double-click the map to unlock Street View";
                     } else {
-                        btn.className = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-700 text-xs md:text-sm font-bold transition-all';
+                        btn.className = TAB_INACTIVE_CLASSES;
                         btn.removeAttribute('title');
                     }
                     pane.classList.add('opacity-0', 'pointer-events-none');
                 }
             });
 
-            if (target === 'map') {
+            if (targetTab === 'map') {
                 setTimeout(() => map.invalidateSize(), 50);
                 hideToaster('hint-view'); 
                 hideToaster('hint-game');
                 coordTextEl.innerText = 'Hover over map'; 
-            } else if (target === 'view') {
+            } else if (targetTab === 'view') {
                 hideToaster('hint-view'); 
                 hideToaster('hint-game');
                 if (currentTargetLat !== null && currentTargetLng !== null) {
                     coordTextEl.innerText = `Target: ${currentTargetLat.toFixed(5)}, ${currentTargetLng.toFixed(5)}`;
                 }
-            } else if (target === 'game') {
+            } else if (targetTab === 'game') {
                 hideToaster('hint-map');
                 hideToaster('hint-view');
                 if (!gameMapInstance) initGameMap();
@@ -761,28 +773,58 @@
             if (e.key === 'Escape') switchTab('map');
         });
 
+        /**
+         * Applies visibility classes to an element for smooth show/hide transitions.
+         * @param {HTMLElement|null} element - Element to update.
+         * @param {boolean} isVisible - Whether the element should be visible.
+         * @param {string[]} visibleClasses - Classes used for the visible state.
+         * @param {string[]} hiddenClasses - Classes used for the hidden state.
+         * @returns {void}
+         */
+        function setElementVisibilityClasses(element, isVisible, visibleClasses, hiddenClasses) {
+            if (!element) return;
+            const addClasses = isVisible ? visibleClasses : hiddenClasses;
+            const removeClasses = isVisible ? hiddenClasses : visibleClasses;
+            element.classList.remove(...removeClasses);
+            element.classList.add(...addClasses);
+        }
+
         // --- TOASTER POPUP LOGIC ---
+        /**
+         * Shows a toaster hint and auto-hides it after the given duration.
+         * @param {string} hintId - Hint element ID.
+         * @param {number} [duration=7000] - Milliseconds before auto-hide.
+         * @returns {void}
+         */
         function showToaster(hintId, duration = 7000) {
             const hint = document.getElementById(hintId);
             if (!hint) return;
             
             if (activeToasters[hintId]) clearTimeout(activeToasters[hintId]);
-            
-            hint.classList.remove('opacity-0', 'translate-x-8', 'pointer-events-none', 'scale-95');
-            hint.classList.add('opacity-100', 'translate-x-0', 'scale-100');
+            setElementVisibilityClasses(hint, true, TOASTER_VISIBLE_CLASSES, TOASTER_HIDDEN_CLASSES);
 
             activeToasters[hintId] = setTimeout(() => {
                 hideToaster(hintId);
             }, duration);
         }
 
+        /**
+         * Hides a toaster hint element.
+         * @param {string} hintId - Hint element ID.
+         * @returns {void}
+         */
         function hideToaster(hintId) {
             const hint = document.getElementById(hintId);
             if (!hint) return;
-            hint.classList.add('opacity-0', 'translate-x-8', 'pointer-events-none', 'scale-95');
-            hint.classList.remove('opacity-100', 'translate-x-0', 'scale-100');
+            setElementVisibilityClasses(hint, false, TOASTER_VISIBLE_CLASSES, TOASTER_HIDDEN_CLASSES);
         }
 
+        /**
+         * Hooks up a button to toggle a toaster hint and close button.
+         * @param {string} hintId - Hint element ID.
+         * @param {string} btnId - Trigger button ID.
+         * @returns {void}
+         */
         function setupToasterToggle(hintId, btnId) {
             const hint = document.getElementById(hintId);
             const btn = document.getElementById(btnId);
@@ -817,10 +859,15 @@
         setTimeout(() => showToaster('hint-map', 7000), 500);
 
         // --- DYNAMIC SNAP NOTIFICATION LOGIC ---
+        /**
+         * Displays a snap-related notification with auto-hide.
+         * @param {string} elementId - Notification element ID.
+         * @param {number} [duration=5000] - Milliseconds before auto-hide.
+         * @returns {void}
+         */
         function displaySnapNotification(elementId, duration = 5000) {
             const hint = document.getElementById(elementId);
-            hint.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none', 'scale-95');
-            hint.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+            setElementVisibilityClasses(hint, true, SNAP_VISIBLE_CLASSES, SNAP_HIDDEN_CLASSES);
             
             if (activeToasters[elementId]) clearTimeout(activeToasters[elementId]);
             activeToasters[elementId] = setTimeout(() => {
@@ -828,10 +875,14 @@
             }, duration);
         }
 
+        /**
+         * Hides a snap-related notification.
+         * @param {string} elementId - Notification element ID.
+         * @returns {void}
+         */
         function hideSnapNotification(elementId) {
             const hint = document.getElementById(elementId);
-            hint.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none', 'scale-95');
-            hint.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+            setElementVisibilityClasses(hint, false, SNAP_VISIBLE_CLASSES, SNAP_HIDDEN_CLASSES);
         }
 
         document.querySelector('#hint-snap .close-hint').addEventListener('click', () => hideSnapNotification('hint-snap'));
@@ -1438,9 +1489,9 @@
             btnStartGame.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
             
             // FIXED: Aggressive invalidation loop to ensure map fills space during/after transition
-            const iv = setInterval(() => gameMapInstance.invalidateSize(), 50);
+            const mapResizeInterval = setInterval(() => gameMapInstance.invalidateSize(), 50);
             setTimeout(() => {
-                clearInterval(iv);
+                clearInterval(mapResizeInterval);
                 gameMapInstance.invalidateSize();
                 gameMapInstance.fitBounds(gamePolyline.getBounds(), {padding: [100, 100]});
             }, 600);
