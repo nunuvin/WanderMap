@@ -14,12 +14,12 @@ WanderMap is a single-page map explorer and geolocation guessing game built with
 No build step is required.
 
 1. Clone the repository.
-2. Open `/home/runner/work/WanderMap/WanderMap/index.html` in a browser.
+2. Open `index.html` in a browser.
 
 If your browser blocks some local iframe behaviors, run a simple static server instead:
 
 ```bash
-cd /home/runner/work/WanderMap/WanderMap
+cd WanderMap
 python3 -m http.server 8000
 ```
 
