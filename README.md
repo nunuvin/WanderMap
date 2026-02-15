@@ -10,6 +10,8 @@ It was made with Gemini Pro.
 - Seeded game rounds with timed guessing mode
 - In-page debug terminal and gameplay stats panel
 
+## Live demo: [WanderMap](https://nunuvin.github.io/WanderMap/) on Github Pages
+
 ## Run locally
 
 No build step is required.
@@ -26,9 +28,6 @@ python3 -m http.server 8000
 
 Then visit `http://localhost:8000`.
 
-## Live demo
-
-GitHub Pages: https://nunuvin.github.io/WanderMap/
 
 ## Project structure
 
