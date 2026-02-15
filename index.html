@@ -239,6 +239,28 @@
                 </div>
             </div>
 
+            <!-- Standardized Help Toggle Button (Game) -->
+            <button id="btn-info-game" class="absolute top-16 right-4 z-[400] bg-slate-800/90 hover:bg-slate-700 text-amber-400 hover:text-amber-300 hover:scale-105 p-2.5 rounded-full shadow-lg border border-slate-600 transition-all" title="Toggle Help">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Sleek Game Load Hint Toaster -->
+            <div id="hint-game" class="absolute top-28 right-4 z-[400] bg-slate-900/95 backdrop-blur-md border border-amber-500/50 rounded-xl p-3 shadow-2xl w-64 transform transition-all duration-500 opacity-0 translate-x-8 scale-95 pointer-events-none origin-top-right">
+                <div class="flex items-start gap-2.5">
+                    <div class="bg-amber-500/20 p-1.5 rounded-lg text-amber-400 shrink-0">
+                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-bold text-sm mb-0.5">Stuck Loading?</h3>
+                        <p class="text-[11px] text-slate-300 leading-relaxed mb-2">Finding a valid road on the map can take time. If it takes too long, try restarting.</p>
+                        <button id="btn-restart-game-hint" class="w-full py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded text-[11px] transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Restart Round
+                        </button>
+                    </div>
+                    <button class="close-hint shrink-0 text-slate-500 hover:text-white transition-colors p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                </div>
+            </div>
+
             <!-- Game Main Area -->
             <div class="flex-1 relative w-full h-full overflow-hidden bg-black">
                 
@@ -527,6 +549,7 @@
         let countSat = 0, countHybrid = 0, countOsm = 0, countSv = 0, countResets = 0;
         let lastMouseMoveTime = Date.now();
         let blackScreenDetectorTimer;
+        let gameLoadTimer; // New timer for game loading check
         let activeToasters = {};
         let activeViewTab = 'map'; 
         let hasViewedStreet = false;
@@ -708,13 +731,17 @@
             if (target === 'map') {
                 setTimeout(() => map.invalidateSize(), 50);
                 hideToaster('hint-view'); 
+                hideToaster('hint-game');
                 coordTextEl.innerText = 'Hover over map'; 
             } else if (target === 'view') {
                 hideToaster('hint-view'); 
+                hideToaster('hint-game');
                 if (currentTargetLat !== null && currentTargetLng !== null) {
                     coordTextEl.innerText = `Target: ${currentTargetLat.toFixed(5)}, ${currentTargetLng.toFixed(5)}`;
                 }
             } else if (target === 'game') {
+                hideToaster('hint-map');
+                hideToaster('hint-view');
                 if (!gameMapInstance) initGameMap();
                 setTimeout(() => gameMapInstance.invalidateSize(), 50);
                 coordTextEl.innerText = 'Game Mode';
@@ -778,6 +805,14 @@
 
         setupToasterToggle('hint-map', 'btn-info-map');
         setupToasterToggle('hint-view', 'btn-info-view');
+        setupToasterToggle('hint-game', 'btn-info-game');
+        
+        // Handle Restart Button inside the hint
+        document.getElementById('btn-restart-game-hint').addEventListener('click', () => {
+            document.getElementById('regen-seed').click(); 
+            handleStartGame();
+            hideToaster('hint-game');
+        });
 
         setTimeout(() => showToaster('hint-map', 7000), 500);
 
@@ -1112,6 +1147,13 @@
             initRng(seed);
             if (typeof resetGameUI === 'function') resetGameUI();
             
+            // Start Load Monitor immediately (covers generation phase)
+            // We show the hint if generation takes > 15s, regardless of mouse movement
+            clearTimeout(gameLoadTimer);
+            gameLoadTimer = setTimeout(() => {
+                showToaster('hint-game', 10000);
+            }, 15000);
+
             btnStartGame.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Loading...`;
             btnStartGame.classList.add('cursor-not-allowed', 'opacity-75');
             
@@ -1128,6 +1170,10 @@
                 if (!nextGameLocationPromise) prepareNextGameLocation();
                 const location = await nextGameLocationPromise;
                 
+                // Clear the loading timer as we found a location (or failed)
+                clearTimeout(gameLoadTimer);
+                hideToaster('hint-game'); 
+
                 if (location) {
                     gameTargetLat = location.lat;
                     gameTargetLng = location.lng;
@@ -1148,7 +1194,7 @@
                     btnStartGame.onclick = null; 
                     
                     prepareNextGameLocation();
-
+                    
                 } else {
                     logDebug("Failed to generate valid location. Try a new seed.", "error");
                     container.innerHTML = `
@@ -1162,6 +1208,7 @@
                     btnStartGame.innerHTML = `<i data-lucide="play" class="w-3 h-3"></i> Start Round`;
                     btnStartGame.classList.remove('cursor-not-allowed', 'opacity-75');
                     nextGameLocationPromise = null; 
+                    clearTimeout(gameLoadTimer); // Clear monitor on failure since we show error UI
                 }
             }, 100);
         }
@@ -1212,7 +1259,6 @@
             
             container.innerHTML = `
                 <div class="w-full h-full relative group">
-                    <!-- Privacy Blinders (SOLID BLACK - No Spoiler) -->
                     <div id="game-blinder-tl" class="absolute top-0 left-0 w-48 h-12 bg-black z-40 flex items-center justify-center text-[10px] text-slate-500 pointer-events-auto cursor-help border-b border-r border-slate-800 rounded-br-xl hidden" title="Address hidden">
                         <i data-lucide="eye-off" class="w-3 h-3 inline mr-2"></i> Location Hidden
                     </div>
@@ -1266,14 +1312,15 @@
 
         function resetGameUI() {
             clearInterval(gameTimerInterval);
+            clearTimeout(gameLoadTimer); // Clear load monitor
             document.getElementById('game-timer-display').classList.add('hidden');
+            hideToaster('hint-game'); // Hide hint if resetting
             
             // Hide result overlay properly
             const overlay = document.getElementById('game-result-overlay');
             overlay.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
             overlay.classList.remove('translate-y-0');
             
-            // Reset Map container style (un-swap)
             const mapContainer = document.getElementById('game-map-container');
             const viewContainer = document.getElementById('game-view-container');
             const mapHeader = document.getElementById('game-map-header');
