@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="https://unpkg.com/lucide-static@latest/icons/compass.svg">
     <title>WanderMap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -77,21 +76,22 @@
         .animate-highlight {
             animation: highlight-pulse 0.5s ease-out;
         }
+
+        .writing-vertical {
+            writing-mode: vertical-rl;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 h-screen flex flex-col overflow-hidden font-sans antialiased">
     
-    <!-- Unified Single Header & Tab Navigation -->
+    <!-- Unified Header -->
     <header class="bg-slate-900 border-b border-slate-700 p-2 md:p-3 shadow-lg flex items-center justify-between z-40 shrink-0 relative">
-        
-        <!-- Left: Branding -->
         <div class="flex flex-1 items-center gap-2 md:gap-3">
             <i data-lucide="compass" class="text-emerald-400 w-5 h-5 md:w-6 md:h-6 shrink-0"></i>
             <h1 class="hidden sm:block text-base md:text-lg font-bold tracking-tight text-white">WanderMap</h1>
             <span class="inline-flex items-center rounded-md bg-emerald-400/10 px-2 py-1 text-[10px] md:text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-400/20 whitespace-nowrap">Zero API</span>
         </div>
 
-        <!-- Center: Oval Slider Tabs -->
         <div class="flex items-center bg-slate-800 p-1 rounded-full border border-slate-700 shadow-inner shrink-0 relative z-10 mx-2">
             <button id="tab-map" class="flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white text-xs md:text-sm font-bold transition-all shadow-md">
                 <i data-lucide="map" class="w-4 h-4"></i> <span class="hidden sm:inline">MAP</span>
@@ -107,27 +107,20 @@
             </button>
         </div>
 
-        <!-- Right: Coords -->
         <div class="flex flex-1 justify-end">
             <div class="hidden md:flex items-center gap-2 bg-slate-800 px-4 py-1.5 rounded-full text-xs lg:text-sm font-semibold text-slate-200 border border-slate-700 w-48 lg:w-64 justify-center font-mono shrink-0">
                 <i data-lucide="crosshair" class="w-4 h-4 text-emerald-400 shrink-0"></i>
                 <span id="coord-text" class="truncate">Hover over map</span>
             </div>
         </div>
-
     </header>
     
-    <!-- Main Area (Tab Content) -->
     <main class="flex-1 relative h-full overflow-hidden">
-        
         <!-- Map Pane -->
         <div id="pane-map" class="absolute inset-0 w-full h-full z-10 flex flex-col transition-opacity duration-300">
-            <!-- Standardized Help Toggle Button -->
             <button id="btn-info-map" class="absolute top-4 right-4 z-[400] bg-slate-800/90 hover:bg-slate-700 text-amber-400 hover:text-amber-300 hover:scale-105 p-2.5 rounded-full shadow-lg border border-slate-600 transition-all" title="Toggle Help">
                 <i data-lucide="help-circle" class="w-5 h-5"></i>
             </button>
-
-            <!-- Sleek Toaster Overlay for Map -->
             <div id="hint-map" class="absolute top-16 right-4 z-[400] bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl p-3 shadow-2xl w-64 transform transition-all duration-500 opacity-0 translate-x-8 scale-95 pointer-events-none origin-top-right">
                 <div class="flex items-start gap-2.5">
                     <div class="bg-emerald-500/20 p-1.5 rounded-lg text-emerald-400 shrink-0">
@@ -140,20 +133,14 @@
                     <button class="close-hint shrink-0 text-slate-500 hover:text-white transition-colors p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
                 </div>
             </div>
-
-            <!-- Leaflet Container -->
             <div id="map" class="w-full h-full bg-[#0a0f18] z-0"></div>
         </div>
 
         <!-- 360 Street View Pane -->
         <div id="pane-view" class="absolute inset-0 w-full h-full bg-slate-950 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col">
-            
-            <!-- Standardized Help Toggle Button -->
             <button id="btn-info-view" class="absolute top-4 right-4 z-[400] bg-slate-800/90 hover:bg-slate-700 text-amber-400 hover:text-amber-300 hover:scale-105 p-2.5 rounded-full shadow-lg border border-slate-600 transition-all" title="Toggle Help">
                 <i data-lucide="help-circle" class="w-5 h-5"></i>
             </button>
-
-            <!-- Sleek Black Screen Toaster Overlay for View (Auto-Poison Recovery) -->
             <div id="hint-view" class="absolute top-16 right-4 z-[400] bg-slate-900/95 backdrop-blur-md border border-amber-500/50 rounded-xl p-3 shadow-2xl w-64 transform transition-all duration-500 opacity-0 translate-x-8 scale-95 pointer-events-none origin-top-right">
                 <div class="flex items-start gap-2.5">
                     <div class="bg-amber-500/20 p-1.5 rounded-lg text-amber-400 shrink-0">
@@ -200,119 +187,90 @@
 
         <!-- GAME PANE -->
         <div id="pane-game" class="absolute inset-0 w-full h-full bg-slate-950 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col z-20">
-            
-            <!-- Game Options Header (Minimizable) -->
             <div id="game-options-header" class="bg-slate-900/95 border-b border-slate-700 p-2 shadow-md flex flex-wrap items-center gap-2 md:gap-4 justify-between transition-all duration-300 z-30 shrink-0">
                 <div class="flex items-center gap-2 flex-1">
-                    <button id="toggle-game-header" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors" title="Toggle Options">
+                    <button id="toggle-game-header" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors">
                         <i data-lucide="chevron-up" class="w-4 h-4 transition-transform duration-300" id="game-header-icon"></i>
                     </button>
-                    <!-- Seed Input -->
                     <div class="flex items-center gap-1 bg-slate-800 rounded-md border border-slate-700 p-1 flex-1 max-w-xs">
-                        <input type="text" id="game-seed" class="bg-transparent border-none text-xs text-emerald-400 focus:outline-none w-full px-2 font-mono" placeholder="Enter Seed" readonly>
-                        <button id="copy-seed" class="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white" title="Copy Seed">
-                            <i data-lucide="copy" class="w-3 h-3"></i>
-                        </button>
-                        <button id="regen-seed" class="p-1 hover:bg-slate-700 rounded text-emerald-500 hover:text-emerald-400" title="New Random Location">
-                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
-                        </button>
+                        <input type="text" id="game-seed" class="bg-transparent border-none text-xs text-emerald-400 focus:outline-none w-full px-2 font-mono" placeholder="Seed" readonly>
+                        <button id="copy-seed" class="p-1 hover:bg-slate-700 rounded text-slate-400"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                        <button id="regen-seed" class="p-1 hover:bg-slate-700 rounded text-emerald-500"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
                     </div>
                 </div>
-
-                <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-                    <!-- Timer -->
-                    <select id="game-timer" class="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded px-2 py-1 focus:outline-none focus:border-emerald-500">
+                <div class="flex items-center gap-2">
+                    <select id="game-timer" class="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded px-2 py-1">
                         <option value="0">No Timer</option>
                         <option value="30">30s Blitz</option>
                         <option value="60">60s Standard</option>
-                        <option value="180">3m Relaxed</option>
                     </select>
-                    
-                    <!-- Challenge -->
-                    <select id="game-challenge" class="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded px-2 py-1 focus:outline-none focus:border-emerald-500">
+                    <select id="game-challenge" class="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded px-2 py-1">
                         <option value="none">Free Roam</option>
                         <option value="static">Static</option>
                     </select>
-
-                    <button id="btn-start-game" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded shadow-lg transition-colors flex items-center gap-1 whitespace-nowrap min-w-[100px] justify-center">
+                    <!-- FIXED BUTTON WIDTH to prevent resizing -->
+                    <button id="btn-start-game" class="w-36 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded shadow-lg transition-colors flex items-center justify-center gap-1.5 shrink-0">
                         <i data-lucide="play" class="w-3 h-3"></i> Start Round
                     </button>
                 </div>
             </div>
 
-            <!-- Standardized Help Toggle Button (Game) -->
-            <button id="btn-info-game" class="absolute top-16 right-4 z-[400] bg-slate-800/90 hover:bg-slate-700 text-amber-400 hover:text-amber-300 hover:scale-105 p-2.5 rounded-full shadow-lg border border-slate-600 transition-all" title="Toggle Help">
+            <button id="btn-info-game" class="absolute top-16 right-4 z-[400] bg-slate-800/90 hover:bg-slate-700 text-amber-400 p-2.5 rounded-full shadow-lg border border-slate-600">
                 <i data-lucide="help-circle" class="w-5 h-5"></i>
             </button>
 
-            <!-- Sleek Game Load Hint Toaster -->
             <div id="hint-game" class="absolute top-28 right-4 z-[400] bg-slate-900/95 backdrop-blur-md border border-amber-500/50 rounded-xl p-3 shadow-2xl w-64 transform transition-all duration-500 opacity-0 translate-x-8 scale-95 pointer-events-none origin-top-right">
                 <div class="flex items-start gap-2.5">
-                    <div class="bg-amber-500/20 p-1.5 rounded-lg text-amber-400 shrink-0">
-                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
-                    </div>
+                    <div class="bg-amber-500/20 p-1.5 rounded-lg text-amber-400 shrink-0"><i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i></div>
                     <div class="flex-1">
                         <h3 class="text-white font-bold text-sm mb-0.5">Stuck Loading?</h3>
-                        <p class="text-[11px] text-slate-300 leading-relaxed mb-2">Finding a valid road on the map can take time. If it takes too long, try restarting.</p>
-                        <button id="btn-restart-game-hint" class="w-full py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded text-[11px] transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                        <p class="text-[11px] text-slate-300 mb-2">Finding a valid road on the map can take time. If it takes too long, try restarting.</p>
+                        <button id="btn-restart-game-hint" class="w-full py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded text-[11px] flex items-center justify-center gap-1.5 shadow-md">
                             <i data-lucide="refresh-cw" class="w-3 h-3"></i> Restart Round
                         </button>
                     </div>
-                    <button class="close-hint shrink-0 text-slate-500 hover:text-white transition-colors p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    <button class="close-hint shrink-0 text-slate-500 hover:text-white p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
                 </div>
             </div>
 
-            <!-- Game Main Area -->
             <div class="flex-1 relative w-full h-full overflow-hidden bg-black">
-                
-                <!-- Main View (Swaps between SV and Map) -->
                 <div id="game-view-container" class="absolute inset-0 z-0">
                     <div id="game-panorama" class="w-full h-full bg-slate-900 flex items-center justify-center relative group">
-                        
-                        <!-- Anti-Spoiler Blinders (SOLID BLACK - No Spoiler) -->
-                        <div id="game-blinder-tl" class="absolute top-0 left-0 w-48 h-12 bg-black z-40 flex items-center justify-center text-[10px] text-slate-500 pointer-events-auto cursor-help border-b border-r border-slate-800 rounded-br-xl hidden" title="Address hidden">
-                            <i data-lucide="eye-off" class="w-3 h-3 inline mr-2"></i> Location Hidden
+                        <!-- Privacy Blinders (Solid Black) -->
+                        <div id="game-blinder-tl" class="absolute top-0 left-0 w-48 h-12 bg-black z-40 flex items-center justify-center text-[10px] text-slate-500 border-b border-r border-slate-800 rounded-br-xl hidden">
+                            <i data-lucide="eye-off" class="w-3 h-3 mr-2"></i> Location Hidden
                         </div>
-                        <div id="game-blinder-tr" class="absolute top-0 right-0 w-16 h-40 bg-black z-40 flex flex-col items-center justify-center text-[10px] text-slate-500 pointer-events-auto cursor-help border-b border-l border-slate-800 rounded-bl-xl writing-vertical hidden" title="Source hidden">
-                            <i data-lucide="map-pin-off" class="w-3 h-3 mb-2"></i>
+                        <div id="game-blinder-tr" class="absolute top-0 right-0 w-32 h-64 bg-black z-40 flex flex-col items-center justify-center text-sm font-bold tracking-widest text-slate-500 border-b border-l border-slate-800 rounded-bl-3xl writing-vertical hidden">
+                            <i data-lucide="map-pin-off" class="w-5 h-5 mb-3"></i> Source Hidden
                         </div>
-
                         <div class="text-center p-6 text-slate-500">
                             <i data-lucide="gamepad-2" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>Press "Start Round" to teleport to a random location!</p>
+                            <p>Press "Start Round" to begin!</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Floating Guess Map (Resizable & Draggable) -->
                 <div id="game-map-container" class="absolute bottom-4 right-4 w-96 h-64 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-lg shadow-2xl z-20 flex flex-col transition-all duration-500 hover:opacity-100 opacity-90 overflow-hidden group">
-                    <!-- Map Header / Drag Handle -->
                     <div id="game-map-header" class="h-6 bg-slate-800 flex items-center justify-between px-2 cursor-grab active:cursor-grabbing border-b border-slate-700 shrink-0">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Guess Location</span>
                         <i data-lucide="move" class="w-3 h-3 text-slate-500"></i>
                     </div>
-                    <!-- The Leaflet Map -->
                     <div id="game-map" class="flex-1 w-full bg-[#0a0f18] cursor-crosshair"></div>
-                    
-                    <!-- Resize Handle -->
                     <div class="resize-handle"></div>
-
-                    <!-- Overlay for "Swap" view state -->
                     <button id="btn-submit-guess" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-6 py-2 rounded-full shadow-lg transition-all transform hover:scale-105 hidden z-[60]">
                         SUBMIT GUESS
                     </button>
                 </div>
 
-                <!-- Result Overlay (Round Top-Center Popup) -->
                 <div id="game-result-overlay" class="absolute top-24 left-1/2 -translate-x-1/2 z-[70] opacity-0 pointer-events-none transition-all duration-500 transform -translate-y-8 scale-90">
-                    <div class="bg-slate-900/95 backdrop-blur-md border border-emerald-500/50 rounded-3xl p-4 shadow-2xl flex items-center gap-4 pr-6 min-w-[320px]" id="result-card">
+                    <div class="bg-slate-900/95 backdrop-blur-md border border-emerald-500/50 rounded-3xl p-4 shadow-2xl flex items-center gap-4 pr-6 min-w-[320px]">
                         <div class="w-14 h-14 bg-emerald-500/20 rounded-full flex items-center justify-center shrink-0">
                             <i data-lucide="flag" class="w-7 h-7 text-emerald-400"></i>
                         </div>
                         <div class="flex-1 border-r border-slate-700 pr-4 mr-2">
                             <h3 class="text-white font-bold text-sm mb-0.5">Round Complete</h3>
                             <div class="text-2xl font-black text-emerald-400 font-mono leading-none" id="result-distance">0 km</div>
-                            <p class="text-slate-400 text-[10px] mt-1">from actual location</p>
+                            <p class="text-slate-400 text-[10px] mt-1">off-target</p>
                         </div>
                         <div class="flex flex-col gap-2">
                             <button id="btn-next-round" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-full transition-colors shadow-lg text-xs flex items-center gap-2 whitespace-nowrap">
@@ -325,308 +283,597 @@
                     </div>
                 </div>
 
-                <!-- Countdown Timer -->
-                <div id="game-timer-display" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur-md border border-slate-700 text-white font-mono text-xl font-bold px-4 py-1 rounded-full shadow-xl z-10 hidden">
-                    30
-                </div>
-
+                <div id="game-timer-display" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur-md border border-slate-700 text-white font-mono text-xl font-bold px-4 py-1 rounded-full shadow-xl z-10 hidden">30</div>
             </div>
         </div>
 
-        <!-- API Stats Pane -->
+        <!-- ABOUT PANE -->
         <div id="pane-stats" class="absolute inset-0 w-full h-full bg-slate-950 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col p-4 md:p-8 overflow-y-auto z-20">
             <div class="max-w-4xl mx-auto w-full space-y-6 pb-12">
                 <div class="flex items-center gap-3 mb-2">
                     <i data-lucide="activity" class="w-8 h-8 text-emerald-400"></i>
-                    <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">API Usage Statistics</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">Implementation & Credits</h2>
                 </div>
                 
-                <!-- NEW ARCHITECTURE SUMMARY BANNER -->
-                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center gap-4 mb-8">
-                    <div class="bg-emerald-500/20 p-2 rounded-full text-emerald-400">
-                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="layout" class="text-sky-500 w-4 h-4"></i> Tailwind CSS</h4>
+                        <p class="text-xs text-slate-400 mb-4">Responsive styling and modern UI components.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">https://cdn.tailwindcss.com</code>
                     </div>
-                    <div>
-                        <h3 class="text-emerald-400 font-bold text-sm">Zero-API Architecture Active</h3>
-                        <p class="text-xs text-slate-300">Monitoring 100% of external dynamic data requests across all keyless endpoints.</p>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="layers" class="text-purple-500 w-4 h-4"></i> Leaflet.js</h4>
+                        <p class="text-xs text-slate-400 mb-4">Core mapping engine for all map interaction.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">https://unpkg.com/leaflet</code>
                     </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Stats Content -->
-                    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-6 opacity-10">
-                            <i data-lucide="globe" class="w-24 h-24 text-white"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2 relative z-10">
-                            <div>
-                                <h3 class="text-xl font-bold text-white">GIS Base Map</h3>
-                                <p class="text-sm text-slate-400 font-medium">Esri World Imagery</p>
-                            </div>
-                        </div>
-                        <div class="text-4xl font-bold text-emerald-400 tracking-tighter my-4 relative z-10" id="stat-sat">0</div>
-                        <div class="relative z-10 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-                            <p class="text-xs text-slate-300 flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i> Active Sources:</p>
-                            <ul class="text-xs text-slate-500 list-disc list-inside space-y-1 ml-1 mt-1">
-                                <li>Global Satellite Photos</li>
-                                <li>Coordinate Normalization</li>
-                            </ul>
-                        </div>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="globe" class="text-emerald-500 w-4 h-4"></i> Esri Sat</h4>
+                        <p class="text-xs text-slate-400 mb-4">High-resolution global satellite data.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">ArcGIS/rest/World_Imagery</code>
                     </div>
-
-                    <!-- Labels & Roads Stats -->
-                    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-6 opacity-10">
-                            <i data-lucide="map" class="w-24 h-24 text-white"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2 relative z-10">
-                            <div>
-                                <h3 class="text-xl font-bold text-white">Vector Overlays</h3>
-                                <p class="text-sm text-slate-400 font-medium">Google Hybrid (mt1)</p>
-                            </div>
-                        </div>
-                        <div class="text-4xl font-bold text-blue-400 tracking-tighter my-4 relative z-10" id="stat-hybrid">0</div>
-                        <div class="relative z-10 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-                            <p class="text-xs text-slate-300 flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-blue-500"></i> Active Sources:</p>
-                            <ul class="text-xs text-slate-500 list-disc list-inside space-y-1 ml-1 mt-1">
-                                <li>Country/State Borders</li>
-                                <li>Road & Trail Networks</li>
-                            </ul>
-                        </div>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="map" class="text-blue-500 w-4 h-4"></i> Google Hybrid</h4>
+                        <p class="text-xs text-slate-400 mb-4">Street labels and border vector overlays.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">mt1.google.com/vt/lyrs=h</code>
                     </div>
-
-                    <!-- OpenStreetMap Snapping Stats -->
-                    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-6 opacity-10">
-                            <i data-lucide="route" class="w-24 h-24 text-white"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2 relative z-10">
-                            <div>
-                                <h3 class="text-xl font-bold text-white">Road Snapping</h3>
-                                <p class="text-sm text-slate-400 font-medium">OpenStreetMap (Overpass API)</p>
-                            </div>
-                        </div>
-                        <div class="text-4xl font-bold text-rose-400 tracking-tighter my-4 relative z-10" id="stat-osm">0</div>
-                        <div class="relative z-10 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-                            <p class="text-xs text-slate-300 flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-rose-500"></i> Active Sources:</p>
-                            <ul class="text-xs text-slate-500 list-disc list-inside space-y-1 ml-1 mt-1">
-                                <li>Highway Detection Math</li>
-                                <li>Leaflet Geometry Distance</li>
-                            </ul>
-                        </div>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="route" class="text-rose-500 w-4 h-4"></i> OpenStreetMap</h4>
+                        <p class="text-xs text-slate-400 mb-4">Road geometry and coordinate snapping.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">overpass-api.de/api/interpreter</code>
                     </div>
-                    
-                    <!-- Google SV Stats -->
-                    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-6 opacity-10">
-                            <i data-lucide="compass" class="w-24 h-24 text-white"></i>
-                        </div>
-                        <div class="flex items-start justify-between mb-2 relative z-10">
-                            <div>
-                                <h3 class="text-xl font-bold text-white">360° Imagery</h3>
-                                <p class="text-sm text-slate-400 font-medium">Google Legacy Domain Engine</p>
-                            </div>
-                        </div>
-                        <div class="text-4xl font-bold text-amber-400 tracking-tighter my-4 relative z-10" id="stat-sv">0</div>
-                        <div class="relative z-10 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 flex flex-col gap-2">
-                            <div class="flex justify-between items-center w-full">
-                                <p class="text-xs text-slate-300 flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Engine Resets:</p>
-                                <span id="stat-resets" class="font-mono text-emerald-400 font-bold">0</span>
-                            </div>
-                            <ul class="text-[10px] text-slate-500 list-disc list-inside space-y-0.5 ml-1 border-t border-slate-700/50 pt-2">
-                                <li>Bypasses: Domain Rotation</li>
-                                <li>Bypasses: Locale Masking</li>
-                            </ul>
-                        </div>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="compass" class="text-amber-500 w-4 h-4"></i> Google SV</h4>
+                        <p class="text-xs text-slate-400 mb-4">Legacy 360° street panoramas.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">maps?layer=c&cbll={lat},{lng}</code>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="server" class="text-emerald-500 w-4 h-4"></i> Overpass Config</h4>
+                        <p class="text-xs text-slate-400 mb-4">Round-robin endpoints, rate limit detection, and backoff.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">await checkOverpassStatus();</code>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800 flex flex-col">
+                        <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="globe-2" class="text-indigo-400 w-4 h-4"></i> Global Coverage</h4>
+                        <p class="text-xs text-slate-400 mb-4">20+ targeted high-density bounding boxes.</p>
+                        <code class="text-[10px] bg-black p-2 rounded text-emerald-400 overflow-x-auto whitespace-pre">NA, SA, EU, Asia, Africa, Oceania</code>
                     </div>
                 </div>
 
-                <!-- Implementation & Credits Section -->
-                <div class="mt-12 pt-8 border-t border-slate-800">
-                    <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                        <i data-lucide="award" class="w-6 h-6 text-emerald-400"></i> Implementation & Credits
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-slate-400">
-                        <!-- Esri -->
-                        <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800/80 hover:border-slate-700 transition-colors flex flex-col">
-                            <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4 text-emerald-500"></i> Esri / ArcGIS</h4>
-                            <p class="leading-relaxed mb-4 flex-1">Providing global high-resolution satellite imagery base maps via their unauthenticated World Imagery endpoint.</p>
-                            <details class="group mt-auto">
-                                <summary class="text-[10px] uppercase tracking-wider font-bold text-emerald-500 hover:text-emerald-400 cursor-pointer list-none flex items-center gap-1 transition-colors">
-                                    <i data-lucide="chevron-right" class="w-3 h-3 group-open:rotate-90 transition-transform duration-200"></i> View Implementation
-                                </summary>
-                                <div class="mt-3 p-3 bg-slate-950/80 rounded-lg border border-slate-800 overflow-x-auto debug-scroll">
-                                    <code class="text-emerald-400/80 font-mono text-[10px] whitespace-pre">L.tileLayer('https://server.arcgisonline.com/ArcGIS/<br>rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')</code>
-                                </div>
-                            </details>
-                        </div>
-                        <!-- Google Maps -->
-                        <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800/80 hover:border-slate-700 transition-colors flex flex-col">
-                            <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="map" class="w-4 h-4 text-blue-500"></i> Google Maps</h4>
-                            <p class="leading-relaxed mb-4 flex-1">Providing highly-readable vector hybrid overlays and Legacy 360° Street View panoramas via rotating localized domains.</p>
-                            <details class="group mt-auto">
-                                <summary class="text-[10px] uppercase tracking-wider font-bold text-blue-500 hover:text-blue-400 cursor-pointer list-none flex items-center gap-1 transition-colors">
-                                    <i data-lucide="chevron-right" class="w-3 h-3 group-open:rotate-90 transition-transform duration-200"></i> View Implementation
-                                </summary>
-                                <div class="mt-3 p-3 bg-slate-950/80 rounded-lg border border-slate-800 overflow-x-auto debug-scroll">
-                                    <code class="text-blue-400/80 font-mono text-[10px] whitespace-pre">L.tileLayer('https://mt1.google.com/vt/lyrs=h<br>&hl=en&x={x}&y={y}&z={z}')<br><br>&lt;iframe src="https://www.google.com/maps<br>?layer=c&cbll={lat},{lng}&output=svembed"&gt;</code>
-                                </div>
-                            </details>
-                        </div>
-                        <!-- OpenStreetMap -->
-                        <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800/80 hover:border-slate-700 transition-colors flex flex-col">
-                            <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="route" class="w-4 h-4 text-rose-500"></i> OpenStreetMap</h4>
-                            <p class="leading-relaxed mb-4 flex-1">Crowdsourced global highway and trail geometry dynamically queried via the Overpass API for intelligent coordinate snapping.</p>
-                            <details class="group mt-auto">
-                                <summary class="text-[10px] uppercase tracking-wider font-bold text-rose-500 hover:text-rose-400 cursor-pointer list-none flex items-center gap-1 transition-colors">
-                                    <i data-lucide="chevron-right" class="w-3 h-3 group-open:rotate-90 transition-transform duration-200"></i> View Implementation
-                                </summary>
-                                <div class="mt-3 p-3 bg-slate-950/80 rounded-lg border border-slate-800 overflow-x-auto debug-scroll">
-                                    <code class="text-rose-400/80 font-mono text-[10px] whitespace-pre">fetch(`https://overpass-api.de/api/interpreter<br>?data=[out:json];(way(around:250,${lat},${lng})<br>["highway"~"..."];);out geom;`)</code>
-                                </div>
-                            </details>
-                        </div>
-                        <!-- Leaflet.js -->
-                        <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800/80 hover:border-slate-700 transition-colors flex flex-col">
-                            <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4 text-purple-500"></i> Leaflet.js</h4>
-                            <p class="leading-relaxed mb-4 flex-1">The leading open-source interactive mapping library utilized for rendering the GIS data and handling core map interactions.</p>
-                            <details class="group mt-auto">
-                                <summary class="text-[10px] uppercase tracking-wider font-bold text-purple-500 hover:text-purple-400 cursor-pointer list-none flex items-center gap-1 transition-colors">
-                                    <i data-lucide="chevron-right" class="w-3 h-3 group-open:rotate-90 transition-transform duration-200"></i> View Implementation
-                                </summary>
-                                <div class="mt-3 p-3 bg-slate-950/80 rounded-lg border border-slate-800 overflow-x-auto debug-scroll">
-                                    <code class="text-purple-400/80 font-mono text-[10px] whitespace-pre">&lt;link rel="stylesheet" href="https://unpkg.com/<br>leaflet@1.9.4/dist/leaflet.css" /&gt;<br>&lt;script src="https://unpkg.com/<br>leaflet@1.9.4/dist/leaflet.js"&gt;&lt;/script&gt;</code>
-                                </div>
-                            </details>
-                        </div>
-                        <!-- Tailwind CSS & Lucide -->
-                        <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-800/80 hover:border-slate-700 transition-colors lg:col-span-2 flex flex-col">
-                            <h4 class="text-slate-200 font-bold mb-2 text-sm flex items-center gap-2"><i data-lucide="layout" class="w-4 h-4 text-sky-500"></i> Tailwind CSS & Lucide</h4>
-                            <p class="leading-relaxed mb-4 flex-1">Utility-first styling framework driving the application's fully responsive UI, paired with crisp SVG iconography.</p>
-                            <details class="group mt-auto">
-                                <summary class="text-[10px] uppercase tracking-wider font-bold text-sky-500 hover:text-sky-400 cursor-pointer list-none flex items-center gap-1 transition-colors">
-                                    <i data-lucide="chevron-right" class="w-3 h-3 group-open:rotate-90 transition-transform duration-200"></i> View Implementation
-                                </summary>
-                                <div class="mt-3 p-3 bg-slate-950/80 rounded-lg border border-slate-800 overflow-x-auto debug-scroll">
-                                    <code class="text-sky-400/80 font-mono text-[10px] whitespace-pre">&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;<br>&lt;script src="https://unpkg.com/lucide@latest"&gt;&lt;/script&gt;<br><br>// Init Icons<br>lucide.createIcons();</code>
-                                </div>
-                            </details>
-                        </div>
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-white font-bold mb-4 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-sky-400"></i> API Counters</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-slate-800 p-3 rounded-lg"><p class="text-[10px] text-slate-400">Satellite Tiles</p><p class="text-lg font-bold" id="stat-sat">0</p></div>
+                        <div class="bg-slate-800 p-3 rounded-lg"><p class="text-[10px] text-slate-400">Hybrid Tiles</p><p class="text-lg font-bold" id="stat-hybrid">0</p></div>
+                        <div class="bg-slate-800 p-3 rounded-lg"><p class="text-[10px] text-slate-400">OSM Queries</p><p class="text-lg font-bold" id="stat-osm">0</p></div>
+                        <div class="bg-slate-800 p-3 rounded-lg"><p class="text-[10px] text-slate-400">Panoramas</p><p class="text-lg font-bold" id="stat-sv">0</p></div>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- Live Debug Terminal Toggle & Window (GLOBAL ACROSS TABS) -->
+        <!-- Debug Terminal -->
         <div class="absolute bottom-4 left-4 z-[500] flex flex-col-reverse items-start gap-2 pointer-events-none">
-            <!-- Toggle Button -->
-            <button id="btn-toggle-terminal" class="pointer-events-auto bg-slate-900/95 hover:bg-emerald-900/40 hover:border-emerald-400 hover:shadow-emerald-900/50 text-emerald-400 border border-emerald-500/50 rounded-full w-12 h-12 shadow-xl flex items-center justify-center transition-all backdrop-blur-md group">
-                <span class="text-lg font-mono font-bold tracking-tighter group-hover:scale-110 transition-transform">&gt;_</span>
+            <button id="btn-toggle-terminal" class="pointer-events-auto bg-slate-900/95 hover:bg-emerald-900/40 hover:border-emerald-400 text-emerald-400 border border-emerald-500/50 rounded-full w-12 h-12 shadow-xl flex items-center justify-center transition-all backdrop-blur-md">
+                <span class="text-lg font-mono font-bold tracking-tighter">&gt;_</span>
             </button>
-            
-            <!-- Expanding Window -->
-            <div id="debug-terminal-window" class="pointer-events-auto bg-black/90 backdrop-blur-md border border-emerald-500/30 rounded-lg w-[calc(100vw-2rem)] md:w-[450px] shadow-2xl transition-all duration-300 origin-bottom-left translate-y-4 opacity-0 scale-95 hidden flex-col">
-                <!-- Header (Clickable to close) -->
-                <div id="terminal-header" class="flex items-center justify-between p-3 border-b border-emerald-500/30 cursor-pointer hover:bg-slate-800/50 transition-colors rounded-t-lg group" title="Click to minimize">
-                    <span class="text-[10px] uppercase font-mono text-emerald-400 tracking-wider flex items-center gap-2">
-                        System Log <i data-lucide="chevron-down" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </span>
+            <div id="debug-terminal-window" class="pointer-events-auto bg-black/90 backdrop-blur-md border border-emerald-500/30 rounded-lg w-[calc(100vw-2rem)] md:w-[450px] shadow-2xl transition-all duration-300 hidden flex-col">
+                <div id="terminal-header" class="flex items-center justify-between p-3 border-b border-emerald-500/30 cursor-pointer">
+                    <span class="text-[10px] uppercase font-mono text-emerald-400 tracking-wider">System Log</span>
                     <span id="current-domain-badge" class="text-[9px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">google.com</span>
                 </div>
-                <!-- Log Body -->
-                <div id="debug-log" class="text-[11px] font-mono text-slate-300 h-48 overflow-y-auto debug-scroll flex flex-col gap-1 px-3 py-2">
-                    <div class="shrink-0 break-words">System initialized. Awaiting input...</div>
-                </div>
+                <div id="debug-log" class="text-[11px] font-mono text-slate-300 h-48 overflow-y-auto debug-scroll flex flex-col gap-1 px-3 py-2"></div>
             </div>
         </div>
     </main>
 
     <script>
-        // Initialize UI Icons
         lucide.createIcons();
 
-        // --- GLOBAL VARIABLES & ENGINE STATE ---
-        let countSat = 0, countHybrid = 0, countOsm = 0, countSv = 0, countResets = 0;
+        let countSat = 0, countHybrid = 0, countOsm = 0, countSv = 0;
         let lastMouseMoveTime = Date.now();
-        let blackScreenDetectorTimer;
-        let gameLoadTimer; // New timer for game loading check
+        let blackScreenDetectorTimer, gameLoadTimer;
         let activeToasters = {};
         let activeViewTab = 'map'; 
         let hasViewedStreet = false;
-        const TAB_ACTIVE_CLASSES = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white text-xs md:text-sm font-bold transition-all shadow-md';
-        const TAB_DISABLED_CLASSES = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-500 opacity-50 cursor-not-allowed hover:bg-slate-700/50 text-xs md:text-sm font-bold transition-all';
-        const TAB_INACTIVE_CLASSES = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-700 text-xs md:text-sm font-bold transition-all';
-        const TOASTER_VISIBLE_CLASSES = ['opacity-100', 'translate-x-0', 'scale-100'];
-        const TOASTER_HIDDEN_CLASSES = ['opacity-0', 'translate-x-8', 'pointer-events-none', 'scale-95'];
-        const SNAP_VISIBLE_CLASSES = ['opacity-100', 'translate-y-0', 'scale-100'];
-        const SNAP_HIDDEN_CLASSES = ['opacity-0', '-translate-y-4', 'pointer-events-none', 'scale-95'];
-        
-        // GAME STATE
         let gameMapInstance = null;
-        let gameTargetLat = null;
-        let gameTargetLng = null;
-        let gameGuessMarker = null;
-        let gameTargetMarker = null;
-        let gamePolyline = null;
+        let gameTargetLat = null, gameTargetLng = null;
+        let gameGuessMarker = null, gameTargetMarker = null, gamePolyline = null;
         let gameTimerInterval = null;
-        let isGameMapExpanded = false; 
-        
-        // GAME PRE-CALCULATION
+        let isGameMapExpanded = false;
         let nextGameLocationPromise = null;
+        let activeGenId = 0; // Prevents background generator overlap
 
-        // The Anti-Poisoning Array
+        // Round-robin endpoints to spread load and avoid 429s
+        const overpassEndpoints = [
+            'https://overpass-api.de/api/interpreter',
+            'https://lz4.overpass-api.de/api/interpreter',
+            'https://z.overpass-api.de/api/interpreter'
+        ];
+        let currentOverpassIndex = 0;
+
         const svDomains = ['www.google.com', 'www.google.ca', 'www.google.com.au', 'www.google.co.jp'];
         let currentDomainIndex = 0;
-        
-        // Track the current target
-        let currentTargetLat = null;
-        let currentTargetLng = null;
+        let currentTargetLat = null, currentTargetLng = null;
 
         const statSatEl = document.getElementById('stat-sat');
         const statHybridEl = document.getElementById('stat-hybrid');
         const statOsmEl = document.getElementById('stat-osm');
         const statSvEl = document.getElementById('stat-sv');
-        const statResetsEl = document.getElementById('stat-resets');
-        
         const debugLogEl = document.getElementById('debug-log');
         const domainBadgeEl = document.getElementById('current-domain-badge');
         const terminalWindow = document.getElementById('debug-terminal-window');
         const btnToggleTerminal = document.getElementById('btn-toggle-terminal');
         let terminalOpen = false;
 
-        // --- INIT FUNCTIONS ---
-        
-        function initGameMap() {
-            if (gameMapInstance) return; 
+        let currentGenStep = "Initializing engine...";
+
+        function updateGenStep(msg, type = 'info') {
+            currentGenStep = msg;
+            logDebug(msg, type);
+            const stepText = document.getElementById('loading-step-text');
+            if (stepText) stepText.innerText = msg;
+        }
+
+        function logDebug(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const color = type === 'error' ? 'text-rose-400' : type === 'success' ? 'text-emerald-400' : type === 'warn' ? 'text-amber-400' : 'text-slate-300';
+            debugLogEl.insertAdjacentHTML('beforeend', `<div class="shrink-0"><span class="text-slate-500">[${time}]</span> <span class="${color}">${msg}</span></div>`);
+            debugLogEl.scrollTop = debugLogEl.scrollHeight;
+        }
+
+        btnToggleTerminal.addEventListener('click', () => {
+            terminalOpen = !terminalOpen;
+            terminalWindow.classList.toggle('hidden', !terminalOpen);
+        });
+
+        document.getElementById('terminal-header').addEventListener('click', () => {
+            terminalOpen = false;
+            terminalWindow.classList.add('hidden');
+        });
+
+        window.addEventListener('mousemove', () => { lastMouseMoveTime = Date.now(); });
+
+        const tabs = ['map', 'view', 'game', 'stats'];
+        const coordTextEl = document.getElementById('coord-text');
+
+        function switchTab(target) {
+            if (target === 'view' && !hasViewedStreet) return;
+            activeViewTab = target;
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const pane = document.getElementById(`pane-${t}`);
+                if (!btn || !pane) return;
+                if (t === target) {
+                    btn.className = 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full bg-emerald-500 text-white text-xs md:text-sm font-bold transition-all shadow-md';
+                    pane.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    btn.className = (t === 'view' && !hasViewedStreet) ? 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-500 opacity-50 cursor-not-allowed text-xs md:text-sm font-bold transition-all' : 'flex items-center justify-center gap-1.5 px-3 md:px-5 py-1.5 rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-700 text-xs md:text-sm font-bold transition-all';
+                    pane.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+            if (target === 'map') { setTimeout(() => map.invalidateSize(), 50); hideToaster('hint-game'); coordTextEl.innerText = 'Hover over map'; }
+            else if (target === 'game') { if (!gameMapInstance) initGameMap(); setTimeout(() => gameMapInstance.invalidateSize(), 50); if (!nextGameLocationPromise) prepareNextGameLocation(); }
+        }
+
+        tabs.forEach(t => document.getElementById(`tab-${t}`).addEventListener('click', () => switchTab(t)));
+
+        function showToaster(id, duration = 7000) {
+            const h = document.getElementById(id);
+            if (!h) return;
+            if (activeToasters[id]) clearTimeout(activeToasters[id]);
+            h.classList.remove('opacity-0', 'translate-x-8', 'pointer-events-none', 'scale-95');
+            h.classList.add('opacity-100', 'translate-x-0', 'scale-100');
+            activeToasters[id] = setTimeout(() => hideToaster(id), duration);
+        }
+
+        function hideToaster(id) {
+            const h = document.getElementById(id);
+            if (!h) return;
+            h.classList.add('opacity-0', 'translate-x-8', 'pointer-events-none', 'scale-95');
+            h.classList.remove('opacity-100', 'translate-x-0', 'scale-100');
+        }
+
+        function setupToasterToggle(hId, bId) {
+            const h = document.getElementById(hId), b = document.getElementById(bId);
+            if (!h || !b) return;
+            b.addEventListener('click', () => h.classList.contains('opacity-0') ? showToaster(hId) : hideToaster(hId));
+            h.querySelector('.close-hint').addEventListener('click', () => hideToaster(hId));
+        }
+
+        setupToasterToggle('hint-map', 'btn-info-map');
+        setupToasterToggle('hint-view', 'btn-info-view');
+        setupToasterToggle('hint-game', 'btn-info-game');
+
+        document.getElementById('btn-restart-game-hint').addEventListener('click', () => {
+            document.getElementById('regen-seed').click();
+            handleStartGame();
+            hideToaster('hint-game');
+        });
+
+        const map = L.map('map', { zoomControl: false, doubleClickZoom: false, maxZoom: 18 }).setView([37.723, -119.639], 15);
+        const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        const hybridLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=h&hl=en&x={x}&y={y}&z={z}').addTo(map);
+        satLayer.on('tileload', () => { countSat++; statSatEl.innerText = countSat; });
+        hybridLayer.on('tileload', () => { countHybrid++; statHybridEl.innerText = countHybrid; });
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+
+        async function snapToNearestRoad(lat, lng) {
+            countOsm++; statOsmEl.innerText = countOsm;
+            logDebug(`Querying OSM for roads within 250m...`);
+            const q = `[out:json][timeout:5];(way(around:250,${lat.toFixed(5)},${lng.toFixed(5)})["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"];);out geom;`;
             
-            gameMapInstance = L.map('game-map', {
-                zoomControl: false,
-                attributionControl: false,
-                doubleClickZoom: false 
-            }).setView([20, 0], 1); 
+            // Standard single endpoint for general map interactions
+            try {
+                const r = await fetch(`https://overpass-api.de/api/interpreter`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `data=${encodeURIComponent(q)}`
+                });
+                
+                if (!r.ok) {
+                    logDebug(`OSM API Error: ${r.status} ${r.statusText}`, 'error');
+                    return { lat, lng, snapped: false };
+                }
+                const d = await r.json();
+                if (!d.elements || !d.elements.length) {
+                    logDebug(`No drivable roads found in area.`, 'warn');
+                    return { lat, lng, snapped: false }; 
+                }
+                const p = d.elements[0].geometry[0];
+                return { lat: p.lat, lng: p.lon, snapped: true };
+            } catch (e) { 
+                logDebug(`OSM Network failure: ${e.message}`, 'error');
+                return { lat, lng, snapped: false }; 
+            }
+        }
 
-            L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}', {
-                attribution: '',
-                maxZoom: 18
-            }).addTo(gameMapInstance);
+        map.on('dblclick', async (e) => {
+            const w = e.latlng.wrap();
+            hasViewedStreet = true; switchTab('view');
+            const loc = await snapToNearestRoad(w.lat, w.lng);
+            loadActualStreetView(loc.lat, loc.lng);
+        });
 
-            // Handle Guess clicks
-            let clickCount = 0;
-            let clickTimer = null;
+        function loadActualStreetView(lat, lng) {
+            countSv++; statSvEl.innerText = countSv;
+            const dom = svDomains[currentDomainIndex];
+            document.getElementById('panorama').innerHTML = `<iframe width="100%" height="100%" frameborder="0" style="border:0;" referrerpolicy="no-referrer" src="https://${dom}/maps?layer=c&cbll=${lat.toFixed(6)},${lng.toFixed(6)}&cbp=11,0,0,0,0&ncr=1&hl=en&gl=US&output=svembed&cb=${Date.now()}" allowfullscreen></iframe>`;
+        }
 
-            gameMapInstance.on('click', function(e) {
+        function cyrb128(s) {
+            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+            for (let i = 0, k; i < s.length; i++) {
+                k = s.charCodeAt(i);
+                h1 = h2 ^ Math.imul(h1 ^ k, 597399067); h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+                h3 = h4 ^ Math.imul(h3 ^ k, 951274213); h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+            }
+            return [(h1^h2^h3^h4)>>>0, (h2^h1)>>>0, (h3^h1)>>>0, (h4^h1)>>>0];
+        }
+        function sfc32(a, b, c, d) {
+            return function() {
+                a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+                let t = (a + b) | 0; a = b ^ b >>> 9; b = c + (c << 3) | 0;
+                c = (c << 21) | (c >>> 11); d = d + 1 | 0; t = t + d | 0; c = c + t | 0;
+                return (t >>> 0) / 4294967296;
+            }
+        }
+        let rng;
+        function initRng(s) { let h = cyrb128(s); rng = sfc32(h[0], h[1], h[2], h[3]); }
+        function generateSeed() { return Math.random().toString(36).substring(2, 10).toUpperCase(); }
+
+        // Init Seed Box immediately on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!document.getElementById('game-seed').value) {
+                document.getElementById('game-seed').value = generateSeed();
+            }
+        });
+
+        document.getElementById('regen-seed').addEventListener('click', () => {
+            activeGenId++; // Abort any ongoing background fetches
+            document.getElementById('game-seed').value = generateSeed();
+            nextGameLocationPromise = null;
+            const btn = document.getElementById('btn-start-game');
+            btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Restart Round`;
+            btn.classList.remove('cursor-not-allowed', 'opacity-50');
+            btn.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
+            btn.onclick = handleStartGame; 
+            lucide.createIcons();
+        });
+
+        async function checkOverpassStatus() {
+            try {
+                const res = await fetch('https://overpass-api.de/api/status');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const text = await res.text();
+                
+                const availableMatch = text.match(/(\d+)\s+slots available now/i);
+                if (availableMatch && parseInt(availableMatch[1]) > 0) {
+                    return { available: true, waitMs: 0 };
+                }
+                
+                const waitMatch = text.match(/Slot available after:\s+([^\n\r]+)/i);
+                const timeMatch = text.match(/Current time:\s+([^\n\r]+)/i);
+                
+                if (waitMatch && timeMatch) {
+                    const serverTime = new Date(timeMatch[1].trim()).getTime();
+                    const availableTime = new Date(waitMatch[1].trim()).getTime();
+                    
+                    let waitMs = availableTime - serverTime;
+                    if (waitMs < 0) waitMs = 1000;
+                    return { available: false, waitMs: waitMs + 2000 }; 
+                }
+                
+                return { available: true, waitMs: 0 }; 
+            } catch (e) {
+                logDebug(`Status check failed: ${e.message}`, 'warn');
+                return { available: 'unknown', waitMs: 0 };
+            }
+        }
+
+        async function waitWithCountdown(ms, prefixMsg, genId) {
+            let timeLeft = Math.ceil(ms / 1000);
+            while (timeLeft > 0) {
+                if (genId !== activeGenId) return; // Abort immediately if user restarted
+                const stepText = document.getElementById('loading-step-text');
+                if (stepText) stepText.innerText = `${prefixMsg} ${timeLeft}s...`;
+                await new Promise(r => setTimeout(r, 1000));
+                timeLeft--;
+            }
+        }
+
+        function prepareNextGameLocation() {
+            activeGenId++; // Scope to current generation attempt
+            const s = document.getElementById('game-seed').value;
+            if (!rng) initRng(s);
+            // Flag as a background pre-fetch
+            nextGameLocationPromise = findRandomValidLocation(activeGenId, true);
+        }
+
+        async function findRandomValidLocation(genId, isPrefetch = true) {
+            // Refined, high-density bounding boxes to dramatically increase hit-rate
+            const zones = [
+                { lat: [30, 48], lng: [-122, -75], name: "United States" },
+                { lat: [42, 55], lng: [-5, 15], name: "Western Europe" },
+                { lat: [36, 42], lng: [-10, 15], name: "Southern Europe" },
+                { lat: [45, 55], lng: [15, 30], name: "Eastern Europe" },
+                { lat: [50, 58], lng: [-8, 2], name: "UK & Ireland" },
+                { lat: [33, 40], lng: [130, 140], name: "Japan" },
+                { lat: [34, 38], lng: [126, 129], name: "South Korea" },
+                { lat: [10, 20], lng: [100, 108], name: "SE Asia (Mainland)" },
+                { lat: [10, 18], lng: [120, 125], name: "Philippines" },
+                { lat: [-8, -6], lng: [106, 114], name: "Indonesia (Java)" },
+                { lat: [10, 28], lng: [72, 88], name: "India" },
+                { lat: [24, 26], lng: [54, 56], name: "UAE" },
+                { lat: [36, 41], lng: [26, 36], name: "Turkey" },
+                { lat: [29, 31.5], lng: [30, 33], name: "Egypt" },
+                { lat: [-38, -27], lng: [143, 153], name: "SE Australia" },
+                { lat: [-45, -35], lng: [170, 175], name: "New Zealand" },
+                { lat: [-34, -22], lng: [-50, -45], name: "Brazil Coast" },
+                { lat: [-38, -30], lng: [-72, -58], name: "Argentina & Chile" },
+                { lat: [-34, -23], lng: [18, 32], name: "South Africa" },
+                { lat: [-3, 1], lng: [30, 38], name: "East Africa" },
+                { lat: [5, 9], lng: [-1, 8], name: "West Africa" }
+            ];
+
+            const taskName = isPrefetch ? "Background Pre-fetch" : "Live Generation";
+            updateGenStep(`--- Starting ${taskName} ---`);
+            const stepText = document.getElementById('loading-step-text');
+
+            let backoffDelay = 2000;
+            const maxDelay = 15000; 
+
+            for (let i = 0; i < 20; i++) {
+                if (genId !== activeGenId) {
+                    logDebug(`[${taskName}] Aborted. Newer seed takes priority.`, "warn");
+                    return null;
+                }
+
+                const zone = zones[Math.floor(rng() * zones.length)];
+                const lat = (rng() * (zone.lat[1] - zone.lat[0])) + zone.lat[0];
+                const lng = (rng() * (zone.lng[1] - zone.lng[0])) + zone.lng[0];
+                
+                const attemptStr = isPrefetch ? `Pre-fetch` : `Attempt`;
+                
+                // Keep location in debug log, but hide it in the UI
+                const scanLogMsg = `[${attemptStr} ${i+1}/20] Scanning ${zone.name}...`;
+                const scanUiMsg = `[${attemptStr} ${i+1}/20] Checking location...`;
+                
+                logDebug(scanLogMsg, 'info');
+                currentGenStep = scanUiMsg;
+                if (stepText) stepText.innerText = scanUiMsg;
+                
+                // Increased radius to 30km for a wider search net
+                const res = await snapToNearestRoadForGame(lat, lng, 30000);
+                if (res.snapped) {
+                    logDebug(`[Success] Road found at ${res.lat.toFixed(4)}, ${res.lng.toFixed(4)}!`, 'success');
+                    if (stepText) stepText.innerText = `[Success] Valid location secured!`;
+                    return res;
+                }
+                
+                if (res.rateLimited) {
+                    // Only check the status endpoint if we actually hit a limit, saving API calls
+                    logDebug(`[API 429] Checking API status...`, 'warn');
+                    if (stepText) stepText.innerText = `[API] Analyzing limits...`;
+                    const status = await checkOverpassStatus();
+                    
+                    if (status.available === false && status.waitMs > 0) {
+                        logDebug(`[API Limit] Waiting ${(status.waitMs / 1000).toFixed(1)}s for slot...`, 'warn');
+                        await waitWithCountdown(status.waitMs, `[API Limit] Cooldown`, genId);
+                    } else {
+                        await waitWithCountdown(5000, `[API Limit] Cooldown`, genId); // Fallback
+                    }
+                } else if (res.error) {
+                    if (res.status === 504) {
+                        logDebug(`[HTTP 504] Server timeout. Forcing 60s cooldown...`, 'error');
+                        await waitWithCountdown(60000, `[HTTP 504 Timeout] Retrying in`, genId);
+                        backoffDelay = 2000; // Reset standard backoff after serving the long penalty
+                    } else {
+                        let currentDelay = Math.min(backoffDelay, maxDelay);
+                        currentDelay += Math.floor(Math.random() * 2000); // 0-2s jitter
+                        logDebug(`[API HTTP Error] Fallback cooldown ${(currentDelay/1000).toFixed(1)}s...`, 'error');
+                        await waitWithCountdown(currentDelay, `[Network Error] Retrying in`, genId);
+                        backoffDelay = Math.min(backoffDelay * 2.0, maxDelay); // Steeper exponential backoff
+                    }
+                } else {
+                    backoffDelay = 2000; // Reset backoff upon successful, but empty, response
+                    logDebug(`[Wait] No road found. 1s default cooldown...`, 'warn');
+                    await waitWithCountdown(1000, `[Retry] Next area in`, genId);
+                }
+            }
+            
+            logDebug(`[Failure] Exhausted all 20 attempts.`, 'error');
+            return null;
+        }
+
+        async function snapToNearestRoadForGame(lat, lng, radius) {
+            const q = `[out:json][timeout:5];way(around:${radius},${lat.toFixed(5)},${lng.toFixed(5)})["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential)$"];out geom;`;
+            const endpoint = overpassEndpoints[currentOverpassIndex];
+            
+            // Hard timeout to aggressively cancel hanging 504 gateway timeouts
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            
+            try {
+                const r = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `data=${encodeURIComponent(q)}`,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                if (r.status === 429) {
+                    currentOverpassIndex = (currentOverpassIndex + 1) % overpassEndpoints.length;
+                    return { snapped: false, rateLimited: true, status: 429 };
+                }
+                if (!r.ok) {
+                    logDebug(`API HTTP ${r.status} on ${endpoint}`, 'error');
+                    currentOverpassIndex = (currentOverpassIndex + 1) % overpassEndpoints.length;
+                    return { snapped: false, error: true, status: r.status };
+                }
+                
+                const d = await r.json();
+                if (!d.elements || !d.elements.length) {
+                    return { snapped: false };
+                }
+                
+                for (const el of d.elements) {
+                    if (el.geometry && el.geometry.length > 0) {
+                        return { lat: el.geometry[0].lat, lng: el.geometry[0].lon, snapped: true };
+                    }
+                }
+                return { snapped: false };
+            } catch (e) { 
+                clearTimeout(timeoutId);
+                logDebug(`Fetch Error (${endpoint}): ${e.message}`, 'error');
+                currentOverpassIndex = (currentOverpassIndex + 1) % overpassEndpoints.length;
+                // Treat fetch aborts/timeouts as 504 gateway timeouts for backoff logic
+                const isTimeout = e.name === 'AbortError' || e.message.toLowerCase().includes('timeout');
+                return { snapped: false, error: true, status: isTimeout ? 504 : 0 }; 
+            }
+        }
+
+        // ADDED EXPLICIT CLICK LISTENER FOR THE FLOATING SUBMIT BUTTON
+        document.getElementById('btn-submit-guess').addEventListener('click', submitGuess);
+
+        const btnStartGame = document.getElementById('btn-start-game');
+        function handleStartGame() {
+            const challenge = document.getElementById('game-challenge').value;
+            const timerVal = parseInt(document.getElementById('game-timer').value);
+            
+            activeGenId++; // Increment ID to aggressively abort any previous runs
+            const currentRunId = activeGenId; 
+            
+            resetGameUI();
+            
+            // Increased to 60 seconds (1 minute) before showing the stuck loading hint
+            gameLoadTimer = setTimeout(() => showToaster('hint-game'), 60000);
+            
+            btnStartGame.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Loading...`;
+            btnStartGame.classList.add('cursor-not-allowed', 'opacity-75');
+            
+            document.getElementById('game-panorama').innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center p-6 bg-slate-900">
+                    <i data-lucide="loader-2" class="w-12 h-12 text-emerald-400 animate-spin mb-6 mx-auto"></i>
+                    <p class="text-slate-200 font-bold tracking-wide text-lg mb-2">Teleporting...</p>
+                    <p id="loading-step-text" class="text-emerald-400 text-xs font-mono h-4">Initializing engine...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            setTimeout(async () => {
+                if (currentRunId !== activeGenId) return; // Silently abort if user restarted
+
+                let loc = nextGameLocationPromise ? await nextGameLocationPromise : null;
+                
+                if (currentRunId !== activeGenId) return; 
+                
+                if (!loc) {
+                    logDebug("Pre-calculated location missing. Generating live...", "warn");
+                    const stepText = document.getElementById('loading-step-text');
+                    if (stepText) stepText.innerText = "Generating live...";
+                    // Pass isPrefetch = false to label it clearly in logs
+                    loc = await findRandomValidLocation(currentRunId, false);
+                }
+
+                if (currentRunId !== activeGenId) return; // Final abort check
+
+                clearTimeout(gameLoadTimer); 
+                hideToaster('hint-game');
+                
+                if (loc) {
+                    gameTargetLat = loc.lat; gameTargetLng = loc.lng;
+                    loadGameStreetView(loc.lat, loc.lng, challenge);
+                    if (timerVal > 0) startGameTimer(timerVal);
+                    
+                    document.getElementById('game-blinder-tl').classList.remove('hidden');
+                    document.getElementById('game-blinder-tr').classList.remove('hidden');
+                    
+                    btnStartGame.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3"></i> Place Pin`;
+                    btnStartGame.classList.remove('cursor-not-allowed', 'opacity-75', 'bg-slate-700');
+                    btnStartGame.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
+                    
+                    // FIX: Draw attention to the mini-map when clicked, instead of being disabled
+                    btnStartGame.onclick = () => {
+                        const mapContainer = document.getElementById('game-map-container');
+                        mapContainer.classList.add('ring-4', 'ring-emerald-500', 'transform', '-translate-y-4');
+                        setTimeout(() => {
+                            mapContainer.classList.remove('ring-4', 'ring-emerald-500', 'transform', '-translate-y-4');
+                        }, 400);
+                    };
+                    
+                    lucide.createIcons();
+                    
+                    prepareNextGameLocation();
+                } else {
+                    document.getElementById('game-panorama').innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-center p-6 bg-slate-900">
+                            <i data-lucide="alert-circle" class="w-12 h-12 text-rose-500 mb-4 mx-auto"></i>
+                            <p class="text-slate-300 font-bold tracking-wide">Location Generation Failed</p>
+                            <p class="text-slate-500 text-sm mt-2">Try regenerating the seed or clicking Restart Round.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    btnStartGame.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Restart Round`;
+                    btnStartGame.classList.remove('cursor-not-allowed', 'opacity-75');
+                    btnStartGame.onclick = () => { document.getElementById('regen-seed').click(); };
+                    nextGameLocationPromise = null;
+                }
+            }, 100);
+        }
+        btnStartGame.onclick = handleStartGame;
+
+        function initGameMap() {
+            if (gameMapInstance) return;
+            gameMapInstance = L.map('game-map', { zoomControl: false, attributionControl: false, doubleClickZoom: false }).setView([20, 0], 1);
+            L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}').addTo(gameMapInstance);
+            
+            let clickCount = 0, clickTimer = null;
+            gameMapInstance.on('click', (e) => {
                 clickCount++;
                 if (clickCount === 1) {
-                    clickTimer = setTimeout(() => {
-                        handleGameMapClick(e.latlng);
-                        clickCount = 0;
-                    }, 300); 
+                    clickTimer = setTimeout(() => { handleGameMapClick(e.latlng); clickCount = 0; }, 300);
                 } else if (clickCount === 3) {
-                    clearTimeout(clickTimer);
-                    handleGameMapClick(e.latlng); 
-                    submitGuess(); 
-                    clickCount = 0;
+                    clearTimeout(clickTimer); handleGameMapClick(e.latlng); submitGuess(); clickCount = 0;
                 }
             });
         }
@@ -644,700 +891,36 @@
             gameGuessMarker = L.marker(latlng, {icon: markerIcon}).addTo(gameMapInstance);
             
             const submitBtn = document.getElementById('btn-submit-guess');
-            if (submitBtn.classList.contains('hidden')) {
+            if (submitBtn) {
+                // UNHIDE FLOATING BUTTON
                 submitBtn.classList.remove('hidden');
-                
+
+                // If button was hidden, replace the header button action to Submit Guess
                 const headerBtn = document.getElementById('btn-start-game');
                 headerBtn.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> Submit Guess`;
-                headerBtn.classList.replace('bg-emerald-500', 'bg-emerald-500'); 
-                headerBtn.classList.remove('bg-slate-700', 'cursor-not-allowed', 'opacity-50'); 
+                headerBtn.classList.remove('cursor-not-allowed', 'opacity-50'); 
                 headerBtn.onclick = submitGuess; 
-            } else {
-                submitBtn.classList.remove('animate-highlight');
-                void submitBtn.offsetWidth; 
-                submitBtn.classList.add('animate-highlight');
+                lucide.createIcons();
             }
         }
 
-        // --- TERMINAL TOGGLE LOGIC ---
-        function toggleTerminal() {
-            terminalOpen = !terminalOpen;
-            if (terminalOpen) {
-                terminalWindow.classList.remove('hidden');
-                setTimeout(() => {
-                    terminalWindow.classList.remove('translate-y-4', 'opacity-0', 'scale-95');
-                    terminalWindow.classList.add('translate-y-0', 'opacity-100', 'scale-100');
-                }, 10);
-                btnToggleTerminal.classList.add('bg-emerald-900/50', 'border-emerald-400');
-            } else {
-                terminalWindow.classList.remove('translate-y-0', 'opacity-100', 'scale-100');
-                terminalWindow.classList.add('translate-y-4', 'opacity-0', 'scale-95');
-                setTimeout(() => {
-                    terminalWindow.classList.add('hidden');
-                }, 300);
-                btnToggleTerminal.classList.remove('bg-emerald-900/50', 'border-emerald-400');
-            }
-        }
-        
-        btnToggleTerminal.addEventListener('click', toggleTerminal);
-        document.getElementById('terminal-header').addEventListener('click', () => {
-            if (terminalOpen) toggleTerminal();
-        });
-
-        // --- DEBUG TERMINAL LOGGER ---
-        function logDebug(message, type = 'info') {
-            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "numeric", minute: "numeric", second: "numeric" });
-            const color = type === 'error' ? 'text-rose-400' : type === 'success' ? 'text-emerald-400' : type === 'warn' ? 'text-amber-400' : 'text-slate-300';
-            
-            const html = `<div class="shrink-0 break-words"><span class="text-slate-500">[${time}]</span> <span class="${color}">${message}</span></div>`;
-            debugLogEl.insertAdjacentHTML('beforeend', html);
-            debugLogEl.scrollTop = debugLogEl.scrollHeight;
-
-            if (!terminalOpen) {
-                btnToggleTerminal.classList.add('animate-pulse', 'border-emerald-400');
-                setTimeout(() => {
-                    if (!terminalOpen) btnToggleTerminal.classList.remove('animate-pulse', 'border-emerald-400');
-                }, 2000);
-            }
-        }
-
-        // Track mouse movement globally
-        window.addEventListener('mousemove', () => {
-            lastMouseMoveTime = Date.now();
-        });
-
-        // --- TAB LOGIC ---
-        const tabs = ['map', 'view', 'game', 'stats'];
-        const coordTextEl = document.getElementById('coord-text');
-
-        /**
-         * Switches the active top-level tab and updates related UI state.
-         * @param {'map'|'view'|'game'|'stats'} targetTab - Tab to activate.
-         * @returns {void}
-         */
-        function switchTab(targetTab) {
-            if (targetTab === 'view' && !hasViewedStreet) return; 
-
-            activeViewTab = targetTab;
-            
-            tabs.forEach(tabName => {
-                const btn = document.getElementById(`tab-${tabName}`);
-                const pane = document.getElementById(`pane-${tabName}`);
-                if (!btn || !pane) return;
-
-                if (tabName === targetTab) {
-                    btn.className = TAB_ACTIVE_CLASSES;
-                    btn.removeAttribute('title');
-                    pane.classList.remove('opacity-0', 'pointer-events-none');
-                } else {
-                    if (tabName === 'view' && !hasViewedStreet) {
-                        btn.className = TAB_DISABLED_CLASSES;
-                        btn.title = "Double-click the map to unlock Street View";
-                    } else {
-                        btn.className = TAB_INACTIVE_CLASSES;
-                        btn.removeAttribute('title');
-                    }
-                    pane.classList.add('opacity-0', 'pointer-events-none');
-                }
-            });
-
-            if (targetTab === 'map') {
-                setTimeout(() => map.invalidateSize(), 50);
-                hideToaster('hint-view'); 
-                hideToaster('hint-game');
-                coordTextEl.innerText = 'Hover over map'; 
-            } else if (targetTab === 'view') {
-                hideToaster('hint-view'); 
-                hideToaster('hint-game');
-                if (currentTargetLat !== null && currentTargetLng !== null) {
-                    coordTextEl.innerText = `Target: ${currentTargetLat.toFixed(5)}, ${currentTargetLng.toFixed(5)}`;
-                }
-            } else if (targetTab === 'game') {
-                hideToaster('hint-map');
-                hideToaster('hint-view');
-                if (!gameMapInstance) initGameMap();
-                setTimeout(() => gameMapInstance.invalidateSize(), 50);
-                coordTextEl.innerText = 'Game Mode';
-                
-                if (!nextGameLocationPromise) {
-                    prepareNextGameLocation();
-                }
-            }
-        }
-
-        document.getElementById('tab-map').addEventListener('click', () => switchTab('map'));
-        document.getElementById('tab-view').addEventListener('click', () => switchTab('view'));
-        document.getElementById('tab-game').addEventListener('click', () => switchTab('game'));
-        document.getElementById('tab-stats').addEventListener('click', () => switchTab('stats'));
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') switchTab('map');
-        });
-
-        /**
-         * Applies visibility classes to an element for smooth show/hide transitions.
-         * @param {HTMLElement|null} element - Element to update.
-         * @param {boolean} isVisible - Whether the element should be visible.
-         * @param {string[]} visibleClasses - Classes used for the visible state.
-         * @param {string[]} hiddenClasses - Classes used for the hidden state.
-         * @returns {void}
-         */
-        function setElementVisibilityClasses(element, isVisible, visibleClasses, hiddenClasses) {
-            if (!element) return;
-            const addClasses = isVisible ? visibleClasses : hiddenClasses;
-            const removeClasses = isVisible ? hiddenClasses : visibleClasses;
-            element.classList.remove(...removeClasses);
-            element.classList.add(...addClasses);
-        }
-
-        // --- TOASTER POPUP LOGIC ---
-        /**
-         * Shows a toaster hint and auto-hides it after the given duration.
-         * @param {string} hintId - Hint element ID.
-         * @param {number} [duration=7000] - Milliseconds before auto-hide.
-         * @returns {void}
-         */
-        function showToaster(hintId, duration = 7000) {
-            const hint = document.getElementById(hintId);
-            if (!hint) return;
-            
-            if (activeToasters[hintId]) clearTimeout(activeToasters[hintId]);
-            setElementVisibilityClasses(hint, true, TOASTER_VISIBLE_CLASSES, TOASTER_HIDDEN_CLASSES);
-
-            activeToasters[hintId] = setTimeout(() => {
-                hideToaster(hintId);
-            }, duration);
-        }
-
-        /**
-         * Hides a toaster hint element.
-         * @param {string} hintId - Hint element ID.
-         * @returns {void}
-         */
-        function hideToaster(hintId) {
-            const hint = document.getElementById(hintId);
-            if (!hint) return;
-            setElementVisibilityClasses(hint, false, TOASTER_VISIBLE_CLASSES, TOASTER_HIDDEN_CLASSES);
-        }
-
-        /**
-         * Hooks up a button to toggle a toaster hint and close button.
-         * @param {string} hintId - Hint element ID.
-         * @param {string} btnId - Trigger button ID.
-         * @returns {void}
-         */
-        function setupToasterToggle(hintId, btnId) {
-            const hint = document.getElementById(hintId);
-            const btn = document.getElementById(btnId);
-            if (!hint || !btn) return;
-            
-            btn.addEventListener('click', () => {
-                const isHidden = hint.classList.contains('opacity-0');
-                if (isHidden) {
-                    showToaster(hintId, 7000);
-                } else {
-                    hideToaster(hintId);
-                }
-            });
-
-            const closeBtn = hint.querySelector('.close-hint');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => hideToaster(hintId));
-            }
-        }
-
-        setupToasterToggle('hint-map', 'btn-info-map');
-        setupToasterToggle('hint-view', 'btn-info-view');
-        setupToasterToggle('hint-game', 'btn-info-game');
-        
-        // Handle Restart Button inside the hint
-        document.getElementById('btn-restart-game-hint').addEventListener('click', () => {
-            document.getElementById('regen-seed').click(); 
-            handleStartGame();
-            hideToaster('hint-game');
-        });
-
-        setTimeout(() => showToaster('hint-map', 7000), 500);
-
-        // --- DYNAMIC SNAP NOTIFICATION LOGIC ---
-        /**
-         * Displays a snap-related notification with auto-hide.
-         * @param {string} elementId - Notification element ID.
-         * @param {number} [duration=5000] - Milliseconds before auto-hide.
-         * @returns {void}
-         */
-        function displaySnapNotification(elementId, duration = 5000) {
-            const hint = document.getElementById(elementId);
-            setElementVisibilityClasses(hint, true, SNAP_VISIBLE_CLASSES, SNAP_HIDDEN_CLASSES);
-            
-            if (activeToasters[elementId]) clearTimeout(activeToasters[elementId]);
-            activeToasters[elementId] = setTimeout(() => {
-                hideSnapNotification(elementId);
-            }, duration);
-        }
-
-        /**
-         * Hides a snap-related notification.
-         * @param {string} elementId - Notification element ID.
-         * @returns {void}
-         */
-        function hideSnapNotification(elementId) {
-            const hint = document.getElementById(elementId);
-            setElementVisibilityClasses(hint, false, SNAP_VISIBLE_CLASSES, SNAP_HIDDEN_CLASSES);
-        }
-
-        document.querySelector('#hint-snap .close-hint').addEventListener('click', () => hideSnapNotification('hint-snap'));
-        document.querySelector('#hint-snap-fail .close-hint').addEventListener('click', () => hideSnapNotification('hint-snap-fail'));
-
-        // 1. Initialize Leaflet Map
-        const map = L.map('map', { 
-            zoomControl: false,
-            doubleClickZoom: false,
-            maxZoom: 18
-        }).setView([37.72337, -119.63901], 15);
-        
-        map.on('mousemove', function(e) {
-            if (activeViewTab === 'map') {
-                coordTextEl.innerText = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-            }
-        });
-        map.on('mouseout', function() {
-            if (activeViewTab === 'map') {
-                coordTextEl.innerText = 'Hover over map';
-            }
-        });
-
-        // Base Satellite Layer
-        const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '&copy; Esri',
-            maxZoom: 18,
-            maxNativeZoom: 17
-        }).addTo(map);
-
-        // Google Hybrid Overlay
-        const hybridLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=h&hl=en&x={x}&y={y}&z={z}', {
-            attribution: '&copy; Google',
-            maxZoom: 18,
-            maxNativeZoom: 18
-        }).addTo(map);
-
-        // Attach stat tracking
-        satLayer.on('tileload', () => { countSat++; statSatEl.innerText = countSat.toLocaleString(); });
-        hybridLayer.on('tileload', () => { countHybrid++; statHybridEl.innerText = countHybrid.toLocaleString(); });
-
-        L.control.zoom({ position: 'topleft' }).addTo(map);
-
-        let clickMarker = null;
-
-        // 2. OpenStreetMap Overpass API
-        async function snapToNearestRoad(lat, lng) {
-            countOsm++; 
-            if (statOsmEl) statOsmEl.innerText = countOsm.toLocaleString();
-            logDebug(`Querying OSM for roads within 250m...`);
-
-            const radius = 250; 
-            const query = `[out:json][timeout:5];(way(around:${radius},${lat.toFixed(5)},${lng.toFixed(5)})["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"];);out geom;`;
-            const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-
-            try {
-                const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                if (!response.ok) {
-                    logDebug(`OSM API error: ${response.status}`, 'error');
-                    return { lat, lng, snapped: false };
-                }
-                
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    logDebug(`OSM API returned non-JSON`, 'error');
-                    return { lat, lng, snapped: false };
-                }
-
-                const data = await response.json();
-                if (!data.elements || data.elements.length === 0) {
-                    logDebug(`No drivable roads found in area.`, 'warn');
-                    return { lat, lng, snapped: false }; 
-                }
-
-                let closestDist = Infinity;
-                let closestPt = { lat, lng };
-
-                data.elements.forEach(el => {
-                    if (el.geometry) {
-                        el.geometry.forEach(pt => {
-                            const d = Math.pow(pt.lat - lat, 2) + Math.pow(pt.lon - lng, 2);
-                            if (d < closestDist) {
-                                closestDist = d;
-                                closestPt = { lat: pt.lat, lng: pt.lon };
-                            }
-                        });
-                    }
-                });
-                
-                return { lat: closestPt.lat, lng: closestPt.lng, snapped: true };
-            } catch (err) {
-                logDebug(`OSM Network failure.`, 'error');
-                return { lat, lng, snapped: false }; 
-            }
-        }
-
-
-        // 3. Double Click Event
-        map.on('dblclick', async function(e) {
-            const wrappedLatLng = e.latlng.wrap(); 
-            const originalLat = wrappedLatLng.lat;
-            const originalLng = wrappedLatLng.lng;
-            
-            logDebug(`=== New Teleport Initiated ===`);
-            logDebug(`Raw Click: ${originalLat.toFixed(4)}, ${originalLng.toFixed(4)}`);
-
-            if (clickMarker) map.removeLayer(clickMarker);
-            
-            const markerIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div class="map-marker active"></div>`,
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
-            });
-            clickMarker = L.marker([originalLat, originalLng], {icon: markerIcon}).addTo(map);
-
-            coordTextEl.innerText = `Target: ${originalLat.toFixed(5)}, ${originalLng.toFixed(5)}`;
-            hideToaster('hint-map'); 
-            
-            const panoContainer = document.getElementById('panorama');
-            panoContainer.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center p-6">
-                    <i data-lucide="radar" class="w-12 h-12 text-rose-400 animate-ping mb-4 mx-auto"></i>
-                    <p class="text-slate-200 font-bold tracking-wide">Scanning for drivable roads...</p>
-                    <p class="text-slate-400 text-sm mt-2">Checking OpenStreetMap to avoid wilderness dead-zones</p>
-                </div>
-            `;
-            lucide.createIcons();
-            
-            hasViewedStreet = true;
-            switchTab('view');
-            
-            const location = await snapToNearestRoad(originalLat, originalLng);
-
-            if (location.snapped) {
-                clickMarker.setLatLng([location.lat, location.lng]);
-                currentTargetLat = location.lat;
-                currentTargetLng = location.lng;
-                
-                const dist = Math.round(map.distance([originalLat, originalLng], [location.lat, location.lng]));
-                logDebug(`Successfully snapped to nearest road: ${dist}m away`, 'success');
-                if (dist > 0) {
-                    document.getElementById('snap-distance-text').innerText = `Snapped to road ${dist}m away`;
-                    displaySnapNotification('hint-snap');
-                }
-                
-            } else {
-                currentTargetLat = originalLat;
-                currentTargetLng = originalLng;
-                displaySnapNotification('hint-snap-fail');
-                logDebug(`No drivable road found nearby. Using raw coordinates.`, 'warn');
-            }
-            
-            coordTextEl.innerText = `Snapped: ${currentTargetLat.toFixed(5)}, ${currentTargetLng.toFixed(5)}`;
-
-            panoContainer.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center p-6">
-                    <i data-lucide="loader-2" class="w-10 h-10 text-emerald-400 animate-spin mb-4 mx-auto"></i>
-                    <p class="text-slate-300 font-bold tracking-wide">Establishing secure link...</p>
-                </div>
-            `;
-            lucide.createIcons();
-
-            setTimeout(() => {
-                loadActualStreetView(currentTargetLat, currentTargetLng);
-            }, 400);
-        });
-
-        // 4. The API-Free Street View Hack
-        function loadActualStreetView(lat, lng) {
-            countSv++; 
-            if (statSvEl) statSvEl.innerText = countSv.toLocaleString();
-            
-            const currentDomain = svDomains[currentDomainIndex];
-            if (domainBadgeEl) domainBadgeEl.innerText = currentDomain;
-            logDebug(`Injecting Iframe via: ${currentDomain}`);
-            
-            const panoContainer = document.getElementById('panorama');
-            const failsafeUrl = `https://${currentDomain}/maps/@?api=1&map_action=pano&viewpoint=${lat.toFixed(6)},${lng.toFixed(6)}`;
-            
-            panoContainer.innerHTML = `
-                <iframe 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    style="border:0;" 
-                    referrerpolicy="no-referrer"
-                    src="https://${currentDomain}/maps?layer=c&cbll=${lat.toFixed(6)},${lng.toFixed(6)}&cbp=11,0,0,0,0&ncr=1&hl=en&gl=US&output=svembed&cb=${Date.now()}" 
-                    allowfullscreen>
-                </iframe>
-            `;
-
-            const failsafeToasterLink = document.getElementById('failsafe-link-toaster');
-            if (failsafeToasterLink) failsafeToasterLink.href = failsafeUrl;
-
-            lastMouseMoveTime = Date.now();
-            clearTimeout(blackScreenDetectorTimer);
-
-            blackScreenDetectorTimer = setTimeout(() => {
-                if (Date.now() - lastMouseMoveTime >= 9500) {
-                    logDebug(`Inactivity detected. Potential black screen / GDPR block.`, 'warn');
-                    showToaster('hint-view', 12000); 
-                }
-            }, 10000);
-        }
-
-        // 5. ENGINE REBOOT LOGIC
-        document.getElementById('btn-reboot-engine').addEventListener('click', () => {
-            countResets++;
-            statResetsEl.innerText = countResets;
-            currentDomainIndex = (currentDomainIndex + 1) % svDomains.length;
-            logDebug(`ENGINE POISONED. Rebooting...`, 'error');
-            logDebug(`Swapping domain to: ${svDomains[currentDomainIndex]}`, 'warn');
-            hideToaster('hint-view');
-            if (currentTargetLat !== null && currentTargetLng !== null) {
-                loadActualStreetView(currentTargetLat, currentTargetLng);
-            }
-        });
-
-        // ==========================================
-        // GAME LOGIC
-        // ==========================================
-
-        function cyrb128(str) {
-            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
-            for (let i = 0, k; i < str.length; i++) {
-                k = str.charCodeAt(i);
-                h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-                h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-                h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-                h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-            }
-            h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-            h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-            h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-            h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-            return [(h1^h2^h3^h4)>>>0, (h2^h1)>>>0, (h3^h1)>>>0, (h4^h1)>>>0];
-        }
-
-        function sfc32(a, b, c, d) {
-            return function() {
-                a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
-                var t = (a + b) | 0;
-                a = b ^ b >>> 9;
-                b = c + (c << 3) | 0;
-                c = (c << 21) | (c >>> 11);
-                d = d + 1 | 0;
-                t = t + d | 0;
-                c = c + t | 0;
-                return (t >>> 0) / 4294967296;
-            }
-        }
-
-        let rng;
-
-        function initRng(seed) {
-            const seedHash = cyrb128(seed);
-            rng = sfc32(seedHash[0], seedHash[1], seedHash[2], seedHash[3]);
-        }
-
-        function generateSeed() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < 8; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
-
-        document.getElementById('game-seed').value = generateSeed();
-        
-        document.getElementById('regen-seed').addEventListener('click', () => {
-            document.getElementById('game-seed').value = generateSeed();
-            nextGameLocationPromise = null;
-            
-            const btn = document.getElementById('btn-start-game');
-            btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Restart Round`;
-            btn.classList.remove('cursor-not-allowed', 'opacity-50', 'opacity-75');
-            btn.classList.add('bg-emerald-500', 'hover:bg-emerald-400'); // Ensure bright green
-            btn.onclick = handleStartGame; 
-        });
-
-        document.getElementById('copy-seed').addEventListener('click', () => {
-            const seed = document.getElementById('game-seed').value;
-            navigator.clipboard.writeText(seed);
-        });
-
-        document.getElementById('toggle-game-header').addEventListener('click', () => {
-            const header = document.getElementById('game-options-header');
-            const icon = document.getElementById('game-header-icon');
-            if (header.classList.contains('-mt-10')) {
-                header.classList.remove('-mt-10', 'opacity-50');
-                icon.classList.remove('rotate-180');
-            } else {
-                header.classList.add('-mt-10', 'opacity-50');
-                icon.classList.add('rotate-180');
-            }
-        });
-
-        function prepareNextGameLocation() {
-            const seed = document.getElementById('game-seed').value;
-            if(!rng) initRng(seed); 
-            nextGameLocationPromise = findRandomValidLocation();
-        }
-
-        const btnStartGame = document.getElementById('btn-start-game');
-        
-        function handleStartGame() {
-            const seed = document.getElementById('game-seed').value;
-            const timerVal = parseInt(document.getElementById('game-timer').value);
-            const challenge = document.getElementById('game-challenge').value;
-
-            initRng(seed);
-            if (typeof resetGameUI === 'function') resetGameUI();
-            
-            // Start Load Monitor immediately (covers generation phase)
-            // We show the hint if generation takes > 15s, regardless of mouse movement
-            clearTimeout(gameLoadTimer);
-            gameLoadTimer = setTimeout(() => {
-                showToaster('hint-game', 10000);
-            }, 15000);
-
-            btnStartGame.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Loading...`;
-            btnStartGame.classList.add('cursor-not-allowed', 'opacity-75');
-            
-            const container = document.getElementById('game-panorama');
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center p-6 bg-slate-900">
-                    <i data-lucide="loader-2" class="w-12 h-12 text-emerald-400 animate-spin mb-4 mx-auto"></i>
-                    <p class="text-slate-300 font-bold tracking-wide">Teleporting...</p>
-                </div>
-            `;
-            lucide.createIcons();
-
-            setTimeout(async () => {
-                if (!nextGameLocationPromise) prepareNextGameLocation();
-                const location = await nextGameLocationPromise;
-                
-                // Clear the loading timer as we found a location (or failed)
-                clearTimeout(gameLoadTimer);
-                hideToaster('hint-game'); 
-
-                if (location) {
-                    gameTargetLat = location.lat;
-                    gameTargetLng = location.lng;
-                    
-                    loadGameStreetView(gameTargetLat, gameTargetLng, challenge);
-                    if (timerVal > 0) startGameTimer(timerVal);
-                    
-                    document.getElementById('game-blinder-tl').classList.remove('hidden');
-                    document.getElementById('game-blinder-tr').classList.remove('hidden');
-                    
-                    btnStartGame.innerHTML = `Place Pin on Map`;
-                    
-                    // FIXED: Keep button Bright Green and opacity-100, just change cursor
-                    btnStartGame.classList.add('cursor-not-allowed');
-                    btnStartGame.classList.remove('opacity-75', 'bg-slate-700', 'hover:bg-slate-600'); 
-                    btnStartGame.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
-                    
-                    btnStartGame.onclick = null; 
-                    
-                    prepareNextGameLocation();
-                    
-                } else {
-                    logDebug("Failed to generate valid location. Try a new seed.", "error");
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-full text-center p-6 bg-slate-900">
-                            <i data-lucide="alert-circle" class="w-12 h-12 text-rose-500 mb-4 mx-auto"></i>
-                            <p class="text-slate-300 font-bold tracking-wide">Location Generation Failed</p>
-                            <p class="text-slate-500 text-sm mt-2">Try regenerating the seed or clicking Start Round again.</p>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                    btnStartGame.innerHTML = `<i data-lucide="play" class="w-3 h-3"></i> Start Round`;
-                    btnStartGame.classList.remove('cursor-not-allowed', 'opacity-75');
-                    nextGameLocationPromise = null; 
-                    clearTimeout(gameLoadTimer); // Clear monitor on failure since we show error UI
-                }
-            }, 100);
-        }
-        
-        btnStartGame.onclick = handleStartGame;
-
-        async function findRandomValidLocation() {
-            const zones = [
-                { lat: [25, 50], lng: [-125, -70] },   
-                { lat: [36, 60], lng: [-10, 30] },     
-                { lat: [30, 45], lng: [130, 145] },    
-                { lat: [-40, -10], lng: [115, 155] },  
-                { lat: [-35, -5], lng: [-70, -35] }    
-            ];
-
-            for (let i = 0; i < 20; i++) {
-                const zone = zones[Math.floor(rng() * zones.length)];
-                const lat = (rng() * (zone.lat[1] - zone.lat[0])) + zone.lat[0];
-                const lng = (rng() * (zone.lng[1] - zone.lng[0])) + zone.lng[0];
-                const check = await snapToNearestRoadForGame(lat, lng, 10000);
-                if (check.snapped) return check;
-            }
-            return null;
-        }
-
-        async function snapToNearestRoadForGame(lat, lng, radius = 5000) {
-            const query = `[out:json][timeout:5];(way(around:${radius},${lat.toFixed(5)},${lng.toFixed(5)})["highway"~"motorway|trunk|primary|secondary"];);out geom;`;
-            const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-            try {
-                const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                if (!response.ok) return { snapped: false };
-                const data = await response.json();
-                if (!data.elements || data.elements.length === 0) return { snapped: false };
-                
-                const el = data.elements[0];
-                if (el.geometry && el.geometry.length > 0) {
-                    return { lat: el.geometry[0].lat, lng: el.geometry[0].lon, snapped: true };
-                }
-                return { snapped: false };
-            } catch (e) { return { snapped: false }; }
-        }
-
-        function loadGameStreetView(lat, lng, challenge) {
-            const container = document.getElementById('game-panorama');
-            const overlay = (challenge === 'static') ? 'cursor-not-allowed bg-transparent' : 'pointer-events-none';
-            const interaction = (challenge === 'static') ? 'style="pointer-events: auto;"' : ''; 
-            const currentDomain = svDomains[currentDomainIndex];
-            
-            container.innerHTML = `
+        function loadGameStreetView(lat, lng, chal) {
+            const dom = svDomains[currentDomainIndex];
+            const interaction = (chal === 'static') ? 'pointer-events-auto cursor-not-allowed' : 'pointer-events-none';
+            document.getElementById('game-panorama').innerHTML = `
                 <div class="w-full h-full relative group">
-                    <div id="game-blinder-tl" class="absolute top-0 left-0 w-48 h-12 bg-black z-40 flex items-center justify-center text-[10px] text-slate-500 pointer-events-auto cursor-help border-b border-r border-slate-800 rounded-br-xl hidden" title="Address hidden">
-                        <i data-lucide="eye-off" class="w-3 h-3 inline mr-2"></i> Location Hidden
-                    </div>
-                    <div id="game-blinder-tr" class="absolute top-0 right-0 w-16 h-40 bg-black z-40 flex flex-col items-center justify-center text-[10px] text-slate-500 pointer-events-auto cursor-help border-b border-l border-slate-800 rounded-bl-xl writing-vertical hidden" title="Source hidden">
-                        <i data-lucide="map-pin-off" class="w-3 h-3 mb-2"></i>
-                    </div>
-
-                    <div class="absolute inset-0 z-10 ${overlay}" ${interaction}></div>
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        frameborder="0" 
-                        style="border:0;" 
-                        referrerpolicy="no-referrer"
-                        src="https://${currentDomain}/maps?layer=c&cbll=${lat.toFixed(6)},${lng.toFixed(6)}&cbp=11,Math.random()*360,0,0,0&ncr=1&hl=en&gl=US&output=svembed&cb=${Date.now()}" 
-                        allowfullscreen>
-                    </iframe>
-                    
-                    <a href="https://${currentDomain}/maps/@?api=1&map_action=pano&viewpoint=${lat.toFixed(6)},${lng.toFixed(6)}" 
+                    <div id="game-blinder-tl" class="absolute top-0 left-0 w-48 h-12 bg-black z-40 flex items-center justify-center text-[10px] text-slate-500 border-b border-r border-slate-800 rounded-br-xl hidden"><i data-lucide="eye-off" class="w-3 h-3 mr-2"></i> Location Hidden</div>
+                    <div id="game-blinder-tr" class="absolute top-0 right-0 w-32 h-64 bg-black z-40 flex flex-col items-center justify-center text-sm font-bold tracking-widest text-slate-500 border-b border-l border-slate-800 rounded-bl-3xl writing-vertical hidden"><i data-lucide="map-pin-off" class="w-5 h-5 mb-3"></i> Source Hidden</div>
+                    <div class="absolute inset-0 z-10 ${interaction}"></div>
+                    <iframe width="100%" height="100%" frameborder="0" style="border:0;" referrerpolicy="no-referrer" src="https://${dom}/maps?layer=c&cbll=${lat.toFixed(6)},${lng.toFixed(6)}&cbp=11,${Math.floor(Math.random()*360)},0,0,0&ncr=1&hl=en&gl=US&output=svembed&cb=${Date.now()}" allowfullscreen></iframe>
+                    <a href="https://${dom}/maps/@?api=1&map_action=pano&viewpoint=${lat.toFixed(6)},${lng.toFixed(6)}" 
                         target="_blank"
                         title="Open safely in official Google Maps (Give Up)"
                         class="absolute bottom-4 left-4 z-[20] bg-slate-900/90 hover:bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-medium transition-colors backdrop-blur-md opacity-0 group-hover:opacity-50 hover:!opacity-100">
                         <i data-lucide="external-link" class="w-3 h-3 text-emerald-400"></i>
                         External Failsafe
                     </a>
-                </div>
-            `;
+                </div>`;
             lucide.createIcons();
         }
 
@@ -1364,202 +947,91 @@
 
         function resetGameUI() {
             clearInterval(gameTimerInterval);
-            clearTimeout(gameLoadTimer); // Clear load monitor
-            document.getElementById('game-timer-display').classList.add('hidden');
-            hideToaster('hint-game'); // Hide hint if resetting
+            clearTimeout(gameLoadTimer); hideToaster('hint-game');
+            document.getElementById('game-result-overlay').classList.add('opacity-0', 'pointer-events-none');
+            const mc = document.getElementById('game-map-container'), vc = document.getElementById('game-view-container'), mh = document.getElementById('game-map-header');
             
-            // Hide result overlay properly
-            const overlay = document.getElementById('game-result-overlay');
-            overlay.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
-            overlay.classList.remove('translate-y-0');
+            mc.removeAttribute('style');
+            vc.removeAttribute('style');
             
-            const mapContainer = document.getElementById('game-map-container');
-            const viewContainer = document.getElementById('game-view-container');
-            const mapHeader = document.getElementById('game-map-header');
+            if (mh) mh.classList.remove('hidden');
             
-            // Restore header if hidden
-            if (mapHeader) mapHeader.classList.remove('hidden');
-
-            mapContainer.style.top = '';
-            mapContainer.style.left = '';
-            mapContainer.style.width = '';
-            mapContainer.style.height = '';
-            mapContainer.classList.remove('inset-0', 'z-0');
-            mapContainer.classList.add('bottom-4', 'right-4', 'w-96', 'h-64', 'z-20', 'border', 'rounded-lg');
+            mc.className = "absolute bottom-4 right-4 w-96 h-64 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-lg shadow-2xl z-20 flex flex-col transition-all duration-500 hover:opacity-100 opacity-90 overflow-hidden group";
+            vc.className = "absolute inset-0 z-0";
             
-            viewContainer.classList.remove('bottom-4', 'right-4', 'w-96', 'h-64', 'z-20', 'border', 'rounded-lg', 'shadow-2xl');
-            viewContainer.classList.add('inset-0', 'z-0');
-            
-            viewContainer.style.pointerEvents = 'auto';
-
-            const blinderTL = document.getElementById('game-blinder-tl');
-            if (blinderTL) blinderTL.classList.add('hidden');
-            
-            const blinderTR = document.getElementById('game-blinder-tr');
-            if (blinderTR) blinderTR.classList.add('hidden');
-
             if (gameGuessMarker && gameMapInstance) gameMapInstance.removeLayer(gameGuessMarker);
             if (gameTargetMarker && gameMapInstance) gameMapInstance.removeLayer(gameTargetMarker);
             if (gamePolyline && gameMapInstance) gameMapInstance.removeLayer(gamePolyline);
             
             document.getElementById('btn-submit-guess').classList.add('hidden');
-            
-            // Reset Header Button to Start state
-            btnStartGame.onclick = handleStartGame;
-
+            btnStartGame.onclick = handleStartGame; 
             btnStartGame.innerHTML = `<i data-lucide="play" class="w-3 h-3"></i> Start Round`;
+            
             btnStartGame.classList.remove('cursor-not-allowed', 'opacity-50', 'opacity-75');
             btnStartGame.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
+            lucide.createIcons();
             
-            // Clear lat/lngs to avoid stale state
-            gameTargetLat = null;
-            gameTargetLng = null;
-            
-            if(gameMapInstance) {
-                gameMapInstance.setView([20,0], 1);
-                gameMapInstance.invalidateSize();
-            }
+            if (gameMapInstance) { gameMapInstance.setView([20, 0], 1); gameMapInstance.invalidateSize(); }
             isGameMapExpanded = false;
         }
 
-        document.getElementById('btn-submit-guess').addEventListener('click', submitGuess);
-
         function submitGuess() {
-            clearInterval(gameTimerInterval);
-            if (!gameTargetLat || !gameGuessMarker) return; 
-
-            const guessLatLng = gameGuessMarker.getLatLng();
-            const distMeters = gameMapInstance.distance(guessLatLng, [gameTargetLat, gameTargetLng]);
-            const distKm = (distMeters / 1000).toFixed(2);
+            if (!gameTargetLat || !gameGuessMarker) return;
+            const guess = gameGuessMarker.getLatLng();
+            const dist = (gameMapInstance.distance(guess, [gameTargetLat, gameTargetLng]) / 1000).toFixed(2);
+            document.getElementById('result-distance').innerText = `${dist} km`;
+            gameTargetMarker = L.marker([gameTargetLat, gameTargetLng], { icon: L.divIcon({ className: 'custom-div-icon', html: `<div class="bg-emerald-500 rounded-full w-4 h-4 border-2 border-white shadow-lg animate-bounce"></div>` }) }).addTo(gameMapInstance);
+            gamePolyline = L.polyline([guess, [gameTargetLat, gameTargetLng]], { color: '#10b981', weight: 3, dashArray: '10, 10' }).addTo(gameMapInstance);
+            const mc = document.getElementById('game-map-container'), vc = document.getElementById('game-view-container'), mh = document.getElementById('game-map-header');
+            mc.style.top = "0px"; mc.style.left = "0px"; mc.style.width = "100%"; mc.style.height = "100%";
+            if (mh) mh.classList.add('hidden');
             
-            document.getElementById('result-distance').innerText = `${distKm} km`;
+            // Force map div inner bounds
+            const mapDiv = document.getElementById('game-map');
+            if(mapDiv) mapDiv.style.height = "100%";
 
-            const targetIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div class="bg-emerald-500 rounded-full w-4 h-4 border-2 border-white shadow-lg animate-bounce"></div>`,
-                iconSize: [16, 16]
-            });
-            gameTargetMarker = L.marker([gameTargetLat, gameTargetLng], {icon: targetIcon}).addTo(gameMapInstance);
+            mc.className = "absolute inset-0 z-50 flex flex-col transition-all duration-500";
+            vc.className = "absolute bottom-4 right-4 w-96 h-64 z-[60] border border-slate-700 rounded-lg shadow-2xl bg-slate-900";
             
-            gamePolyline = L.polyline([guessLatLng, [gameTargetLat, gameTargetLng]], {
-                color: '#10b981',
-                weight: 3,
-                dashArray: '10, 10',
-                opacity: 0.8
-            }).addTo(gameMapInstance);
-
-            gameMapInstance.fitBounds(gamePolyline.getBounds(), {padding: [50, 50]});
-
-            const mapContainer = document.getElementById('game-map-container');
-            const viewContainer = document.getElementById('game-view-container');
-            const mapHeader = document.getElementById('game-map-header');
-            
-            // FIXED: Force full expansion logic
-            mapContainer.style.top = '0px';
-            mapContainer.style.left = '0px';
-            mapContainer.style.width = '100%';
-            mapContainer.style.height = '100%';
-
-            // HIDE HEADER FOR IMMERSIVE MAP
-            if (mapHeader) mapHeader.classList.add('hidden');
-
-            // Force map div to take up 100% height internally
-            const gameMapDiv = document.getElementById('game-map');
-            if(gameMapDiv) gameMapDiv.style.height = '100%';
-
-            mapContainer.classList.remove('bottom-4', 'right-4', 'w-96', 'h-64', 'z-20', 'border', 'rounded-lg');
-            mapContainer.classList.add('inset-0', 'z-0');
-            
-            viewContainer.classList.remove('inset-0', 'z-0');
-            viewContainer.classList.add('bottom-4', 'right-4', 'w-96', 'h-64', 'z-20', 'border', 'border-slate-700', 'rounded-lg', 'shadow-2xl', 'bg-slate-900');
-            
-            viewContainer.style.pointerEvents = 'auto';
-
             document.getElementById('game-blinder-tl').classList.add('hidden');
             document.getElementById('game-blinder-tr').classList.add('hidden');
-
             isGameMapExpanded = true;
+            
+            // HIDE FLOATING BUTTON
             document.getElementById('btn-submit-guess').classList.add('hidden');
             
-            btnStartGame.onclick = () => {
-               document.getElementById('regen-seed').click(); 
-               handleStartGame();
-            };
+            btnStartGame.onclick = () => { document.getElementById('regen-seed').click(); handleStartGame(); };
             btnStartGame.innerHTML = `<i data-lucide="fast-forward" class="w-3 h-3"></i> Next Round`;
-            btnStartGame.classList.remove('cursor-not-allowed', 'opacity-50', 'bg-slate-700');
-            btnStartGame.classList.add('bg-emerald-500', 'hover:bg-emerald-400');
-            
-            // FIXED: Aggressive invalidation loop to ensure map fills space during/after transition
-            const mapResizeInterval = setInterval(() => gameMapInstance.invalidateSize(), 50);
-            setTimeout(() => {
-                clearInterval(mapResizeInterval);
-                gameMapInstance.invalidateSize();
-                gameMapInstance.fitBounds(gamePolyline.getBounds(), {padding: [100, 100]});
+            lucide.createIcons();
+
+            const iv = setInterval(() => gameMapInstance.invalidateSize(), 50);
+            setTimeout(() => { 
+                clearInterval(iv); 
+                gameMapInstance.invalidateSize(); 
+                gameMapInstance.fitBounds(gamePolyline.getBounds(), { padding: [100, 100] }); 
             }, 600);
 
-            const overlay = document.getElementById('game-result-overlay');
-            overlay.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
-            overlay.classList.add('translate-y-0');
-            
-            document.getElementById('btn-view-results').onclick = () => {
-                overlay.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
-                overlay.classList.remove('translate-y-0');
-            };
-            
-            document.getElementById('btn-next-round').onclick = () => {
-                document.getElementById('regen-seed').click(); 
-                handleStartGame();
-            };
+            document.getElementById('game-result-overlay').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('btn-view-results').onclick = () => document.getElementById('game-result-overlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('btn-next-round').onclick = () => { document.getElementById('regen-seed').click(); handleStartGame(); };
         }
 
-        const gameMapContainer = document.getElementById('game-map-container');
-        const gameMapHeader = document.getElementById('game-map-header');
-        let isDragging = false;
-        let dragOffset = { x: 0, y: 0 };
-
-        gameMapHeader.addEventListener('mousedown', (e) => {
-            if (isGameMapExpanded) return; 
-            isDragging = true;
-            
-            const rect = gameMapContainer.getBoundingClientRect();
-            dragOffset.x = e.clientX - rect.left;
-            dragOffset.y = e.clientY - rect.top;
-            
-            gameMapContainer.style.right = 'auto';
-            gameMapContainer.style.bottom = 'auto';
-            gameMapContainer.style.width = `${rect.width}px`;
-            gameMapContainer.style.height = `${rect.height}px`;
-            
+        const gmc = document.getElementById('game-map-container'), gmh = document.getElementById('game-map-header');
+        let isDrag = false, dX, dY;
+        gmh.addEventListener('mousedown', (e) => {
+            if (isGameMapExpanded) return;
+            isDrag = true; const r = gmc.getBoundingClientRect();
+            dX = e.clientX - r.left; dY = e.clientY - r.top;
+            gmc.style.right = 'auto'; gmc.style.bottom = 'auto';
+            gmc.style.width = `${r.width}px`; gmc.style.height = `${r.height}px`;
             document.body.style.cursor = 'grabbing';
-            e.preventDefault();
         });
-
         document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            
-            let newX = e.clientX - dragOffset.x;
-            let newY = e.clientY - dragOffset.y;
-            
-            gameMapContainer.style.left = `${newX}px`;
-            gameMapContainer.style.top = `${newY}px`;
+            if (!isDrag) return;
+            gmc.style.left = `${e.clientX - dX}px`; gmc.style.top = `${e.clientY - dY}px`;
         });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                document.body.style.cursor = 'default';
-            }
-        });
-        
-        gameMapContainer.style.resize = 'both';
-        gameMapContainer.style.overflow = 'hidden';
-        gameMapContainer.style.minWidth = '200px';
-        gameMapContainer.style.minHeight = '150px';
-        gameMapContainer.style.maxWidth = '90vw';
-        gameMapContainer.style.maxHeight = '80vh';
-
-        window.addEventListener('resize', () => map.invalidateSize());
+        document.addEventListener('mouseup', () => { isDrag = false; document.body.style.cursor = 'default'; });
+        gmc.style.resize = 'both'; gmc.style.overflow = 'hidden';
     </script>
 </body>
 </html>
