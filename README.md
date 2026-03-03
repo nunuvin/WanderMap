@@ -11,7 +11,7 @@ It was made with Gemini Pro.
 - In-page debug terminal and gameplay stats panel
 
 ## Live demo: [WanderMap](https://nunuvin.github.io/WanderMap/) on Github Pages
-
+- the random street view can take a while if overpass api is timed out. check via [Overpass API](https://lz4.overpass-api.de/api/status)
 ## Run locally
 
 No build step is required.
