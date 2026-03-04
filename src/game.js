@@ -259,8 +259,16 @@ function initGameMap() {
         clickCount++;
         if (clickCount === 1) {
             clickTimer = setTimeout(() => { handleGameMapClick(e.latlng); clickCount = 0; }, 300);
-        } else if (clickCount === 3) {
-            clearTimeout(clickTimer); handleGameMapClick(e.latlng); submitGuess(); clickCount = 0;
+        } else if (clickCount === 2) {
+            clearTimeout(clickTimer);
+            handleGameMapClick(e.latlng);
+            const submitBtn = document.getElementById('btn-submit-guess');
+            if (submitBtn) {
+                submitBtn.classList.remove('hidden');
+                submitBtn.classList.add('animate-rainbow');
+            }
+            setTimeout(() => { submitGuess(); }, 500);
+            clickCount = 0;
         }
     });
 }
@@ -362,12 +370,28 @@ function resetGameUI() {
 }
 
 function submitGuess() {
+    const btn = document.getElementById('btn-submit-guess');
+    if (btn) btn.classList.remove('animate-rainbow');
+
     if (!gameTargetLat || !gameGuessMarker) return;
-    const guess = gameGuessMarker.getLatLng();
+
+    let guess = gameGuessMarker.getLatLng().wrap();
+    let tLng = gameTargetLng;
+
+    // Calculate shortest path horizontally
+    let lngDiff = guess.lng - tLng;
+    if (lngDiff > 180) {
+        tLng += 360; // shift target right
+    } else if (lngDiff < -180) {
+        tLng -= 360; // shift target left
+    }
+
+    gameGuessMarker.setLatLng(guess);
+
     const dist = (gameMapInstance.distance(guess, [gameTargetLat, gameTargetLng]) / 1000).toFixed(2);
     document.getElementById('result-distance').innerText = `${dist} km`;
-    gameTargetMarker = L.marker([gameTargetLat, gameTargetLng], { icon: L.divIcon({ className: 'custom-div-icon', html: `<div class="bg-emerald-500 rounded-full w-4 h-4 border-2 border-white shadow-lg animate-bounce"></div>` }) }).addTo(gameMapInstance);
-    gamePolyline = L.polyline([guess, [gameTargetLat, gameTargetLng]], { color: '#10b981', weight: 3, dashArray: '10, 10' }).addTo(gameMapInstance);
+    gameTargetMarker = L.marker([gameTargetLat, tLng], { icon: L.divIcon({ className: 'custom-div-icon', html: `<div class="bg-emerald-500 rounded-full w-4 h-4 border-2 border-white shadow-lg animate-bounce"></div>` }) }).addTo(gameMapInstance);
+    gamePolyline = L.polyline([guess, [gameTargetLat, tLng]], { color: '#10b981', weight: 3, dashArray: '10, 10' }).addTo(gameMapInstance);
     const mc = document.getElementById('game-map-container'), vc = document.getElementById('game-view-container'), mh = document.getElementById('game-map-header');
     mc.style.top = "0px"; mc.style.left = "0px"; mc.style.width = "100%"; mc.style.height = "100%";
     if (mh) mh.classList.add('hidden');
